@@ -1,0 +1,13 @@
+:root {
+    --elmos-red: #E52118;
+    --elmos-yellow: #CFAA00;
+    --elmos-black: #000000;
+    --elmos-gray: #F1F1F1;
+    --elmos-green: #2E8B57;
+
+    --color-primary: var(--elmos-red);
+    --color-secondary: var(--elmos-yellow);
+    --color-success: var(--elmos-green);
+    --color-background: var(--elmos-gray);
+    --color-text: var(--elmos-black);
+}

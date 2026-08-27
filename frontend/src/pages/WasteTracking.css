@@ -1,0 +1,50 @@
+.waste-page {
+  padding: var(--space-24);
+  color: var(--color-text);
+}
+
+.waste-controls {
+  display: flex;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+.waste-controls select,
+.waste-controls input {
+  padding: var(--space-12);
+  border: 2px solid var(--elmos-yellow);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+}
+
+.submit-button {
+  background: var(--elmos-green);
+  color: var(--elmos-gray);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+}
+
+.print-button {
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.waste-history {
+  margin-top: var(--space-24);
+}
+
+.waste-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.waste-table th,
+.waste-table td {
+  border: 1px solid var(--elmos-yellow);
+  padding: var(--space-12);
+}

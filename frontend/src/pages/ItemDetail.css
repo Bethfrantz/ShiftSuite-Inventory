@@ -1,0 +1,77 @@
+.item-detail-page {
+  padding: var(--space-24);
+  color: var(--color-text);
+}
+
+.back-button {
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-bottom: var(--space-24);
+}
+
+.item-detail-card {
+  display: flex;
+  gap: var(--space-24);
+  background: var(--color-background);
+  border: 3px solid var(--elmos-red);
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
+}
+
+.item-detail-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.item-detail-photo {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.item-detail-category-photo {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.placeholder {
+  background: var(--elmos-yellow);
+  color: var(--elmos-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-detail-right {
+  flex: 1;
+}
+
+.item-detail-actions {
+  margin-top: var(--space-24);
+  display: flex;
+  gap: var(--space-16);
+}
+
+.edit-button {
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.delete-button {
+  background: var(--elmos-red);
+  color: var(--elmos-gray);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+}

@@ -1,0 +1,96 @@
+.dashboard-page {
+  padding: var(--space-24);
+  color: var(--color-text);
+}
+
+.dashboard-controls {
+  display: flex;
+  gap: var(--space-16);
+  margin-bottom: var(--space-24);
+}
+
+.dashboard-controls select {
+  padding: var(--space-12);
+  border: 2px solid var(--elmos-yellow);
+  border-radius: var(--radius-md);
+}
+
+.print-button {
+  padding: var(--space-12) var(--space-16);
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-16);
+}
+
+.score-card {
+  background: var(--color-background);
+  border: 3px solid var(--elmos-red);
+  border-radius: var(--radius-lg);
+  padding: var(--space-24);
+  text-align: center;
+}
+
+.score-value {
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--elmos-green);
+}
+
+.kpi-card {
+  background: var(--color-background);
+  border: 2px solid var(--elmos-red);
+  border-radius: var(--radius-md);
+  padding: var(--space-16);
+}
+
+.kpi-trend {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+  margin-bottom: var(--space-12);
+}
+
+.trend-arrow.up {
+  color: green;
+}
+
+.trend-arrow.down {
+  color: red;
+}
+
+.trend-arrow.flat {
+  color: gray;
+}
+
+.kpi-chart {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-end;
+  height: 120px;
+  margin-bottom: var(--space-12);
+}
+
+.chart-bar {
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.chart-label {
+  font-size: 12px;
+  margin-top: var(--space-4);
+}
+
+.kpi-score {
+  font-weight: bold;
+  margin-top: var(--space-8);
+}
