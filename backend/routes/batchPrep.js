@@ -5,8 +5,35 @@ const FinishedProduct = require("../models/FinishedProduct");
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 
+/* -------------------------------------------------------------
+  Helper: Throw formatted errors
+------------------------------------------------------------- */
+
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+/* -------------------------------------------------------------
+  Middleware: Attach Request ID 
+------------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+// Middleware: Logging
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} - Body:`,
+    req.body,
+  );
+  next();
+});
+
 // BATCH PREP PLANNER
-router.get("/:storeId/:finishedProductId", async (req, res) => {
+router.get("/:storeId/:finishedProductId", async (req, res, next) => {
   try {
     const { storeId, finishedProductId } = req.params;
     const { quantity } = req.query;
@@ -18,8 +45,7 @@ router.get("/:storeId/:finishedProductId", async (req, res) => {
         "ingredients.itemId",
       );
 
-    if (!fp)
-      return res.status(404).json({ error: "Finished product not found" });
+    if (!fp) throwError("Finished product not found", 404);
 
     let totalBatchCost = 0;
     const ingredientPlan = [];
@@ -32,9 +58,9 @@ router.get("/:storeId/:finishedProductId", async (req, res) => {
 
       totalBatchCost += cost;
 
-      // Check inventory
+      // Correct inventory lookup
       const inventory = await InventoryCount.findOne({
-        storeId,
+        storeId: storeId,
         itemId: item._id,
       });
 
@@ -63,7 +89,7 @@ router.get("/:storeId/:finishedProductId", async (req, res) => {
       ingredients: ingredientPlan,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

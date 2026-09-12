@@ -7,8 +7,39 @@ const Waste = require("../models/Waste");
 const FinishedProduct = require("../models/FinishedProduct");
 const Item = require("../models/Item");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // MENU PROFITABILITY SCORING
-router.get("/:storeId", async (req, res) => {
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const { startDate, endDate } = req.query;
@@ -22,22 +53,42 @@ router.get("/:storeId", async (req, res) => {
       : {};
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
-    const finishedProducts =
-      await FinishedProduct.find().populate("ingredients.itemId");
+    const finishedProducts = await FinishedProduct.find().populate({
+      path: "ingredients.itemId",
+      populate: { path: "categoryId", select: "name photoUrl color" },
+    });
+    if (!finishedProducts.length) throwError("No finished products found", 404);
 
     const usageRecords = await Usage.find({
       storeId,
       ...dateQuery,
-    }).populate("itemId");
+    }).populate({
+      path: "itemId",
+      select: "name photoUrl color",
+      populate: { path: "categoryId", select: "name photoUrl color" },
+    });
 
     const wasteRecords = await Waste.find({
       storeId,
       ...dateQuery,
     })
-      .populate("rawItemId")
-      .populate("finishedProductId");
+      .populate({
+        path: "rawItemId",
+        select: "name photoUrl color",
+        populate: { path: "categoryId", select: "name photoUrl color" },
+      })
+      .populate({
+        path: "finishedProductId",
+        select: "name photoUrl color",
+        populate: { path: "categoryId", select: "name photoUrl color" },
+      });
+    if (!usageRecords.length && !wasteRecords.length)
+      throwError(
+        "No usage or waste records found for the specified date range",
+        404,
+      );
 
     const dashboard = {};
 
@@ -116,11 +167,13 @@ router.get("/:storeId", async (req, res) => {
         id: store._id,
         name: store.name,
         storeNumber: store.storeNumber,
+        district: store.district,
       },
       menuProfitability: dashboard,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

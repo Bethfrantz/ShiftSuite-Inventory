@@ -7,8 +7,39 @@ const Waste = require("../models/Waste");
 const Item = require("../models/Item");
 const FinishedProduct = require("../models/FinishedProduct");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // CATEGORY ANALYTICS
-router.get("/:storeId", async (req, res) => {
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const { startDate, endDate } = req.query;
@@ -22,22 +53,22 @@ router.get("/:storeId", async (req, res) => {
       : {};
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
-    // Load usage + waste
+    // FIXED: Usage + Waste lookup
     const usageRecords = await Usage.find({
-      storeId,
+      store: storeId,
       ...dateQuery,
     }).populate("itemId");
 
     const wasteRecords = await Waste.find({
-      storeId,
+      store: storeId,
       ...dateQuery,
     })
       .populate("rawItemId")
       .populate("finishedProductId");
 
-    const categoryData = {}; // categoryId → { usage, waste, cost }
+    const categoryData = {}; // categoryId → { usage, waste, cost, items }
 
     // USAGE ANALYTICS
     for (const u of usageRecords) {
@@ -123,9 +154,10 @@ router.get("/:storeId", async (req, res) => {
         storeNumber: store.storeNumber,
       },
       categories: categoryData,
+      requestId: req.requestId, // helpful for debugging
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

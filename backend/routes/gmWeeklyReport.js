@@ -4,13 +4,44 @@ const axios = require("axios");
 
 const Store = require("../models/Store");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // GM WEEKLY REPORT
-router.get("/:storeId", async (req, res) => {
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
     const base = "http://localhost:5000/api";
 
@@ -87,7 +118,7 @@ router.get("/:storeId", async (req, res) => {
         id: store._id,
         name: store.name,
         storeNumber: store.storeNumber,
-        districtId: store.districtId,
+        districtId: store.district,
         driveThruEnabled: store.driveThruEnabled,
         driveThruLanes: store.driveThruLanes,
       },
@@ -110,11 +141,12 @@ router.get("/:storeId", async (req, res) => {
       topIssues,
       topOpportunities,
       gmActionItems,
+      requestId: req.requestId,
     };
 
     res.json(report);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err); // Step 3: Send errors to global handler
   }
 });
 

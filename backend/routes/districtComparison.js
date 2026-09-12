@@ -4,13 +4,42 @@ const axios = require("axios");
 
 const District = require("../models/District");
 
-router.get("/", async (req, res) => {
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
+router.get("/", async (req, res, next) => {
   try {
     const districts = await District.find();
 
-    if (!districts.length) {
-      return res.status(404).json({ error: "No districts found" });
-    }
+    if (!districts.length) throwError("No districts found", 404);
 
     const base = "http://localhost:5000/api/districtDashboard";
 
@@ -282,14 +311,12 @@ router.get("/", async (req, res) => {
       forecastConfidenceRanking,
       multiDistrictForecastExecutiveSummary,
       multiDistrictRiskMitigation,
+      requestId: req.requestId, // helpful for debugging
     });
   } catch (err) {
-    console.error("Multi-district comparison error:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to generate multi-district comparison" });
+    console.error(`[${req.requestId}] Multi-district comparison error:`, err);
+    next(err);
   }
 });
-
 // Missing export — now added
 module.exports = router;

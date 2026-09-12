@@ -8,9 +8,15 @@ const ItemUnitsSchema = new mongoose.Schema({
   allowSingles: Boolean,
 });
 
+const PriceHistorySchema = new mongoose.Schema({
+  price: Number,
+  date: Date,
+  invoiceId: mongoose.Schema.Types.ObjectId,
+});
+
 const ItemSchema = new mongoose.Schema({
-  name: String,
-  vendor: String,
+  name: { type: String, required: true },
+  vendor: { type: String, default: "" },
 
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -21,10 +27,11 @@ const ItemSchema = new mongoose.Schema({
   barcode: {
     type: String,
     required: false,
-    unique: true, //optional but recommended
+    unique: true,
   },
 
-  photoUrl: String,
+  photoUrl: { type: String, default: "" },
+
   units: ItemUnitsSchema,
 
   parLevels: [
@@ -35,13 +42,13 @@ const ItemSchema = new mongoose.Schema({
     },
   ],
 
-  // ✔ UPDATED FIELD
   currentPrice: { type: Number, required: true },
 
-  priceHistory: [],
+  priceHistory: [PriceHistorySchema],
 
-  vendorItemNumber: String,
-  active: Boolean,
+  vendorItemNumber: { type: String, default: "" },
+
+  active: { type: Boolean, default: true },
 });
 
 module.exports = mongoose.model("Item", ItemSchema);

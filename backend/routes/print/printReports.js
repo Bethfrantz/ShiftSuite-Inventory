@@ -8,21 +8,35 @@ const DistrictReport = require("../../models/DistrictReport");
 // Print store report
 router.get("/store/:storeId", async (req, res) => {
   try {
-    const report = await StoreReport.findOne({ storeId: req.params.storeId });
+    const report = await StoreReport.findOne({
+      store: req.params.storeId,
+    }).populate("store");
+
+    if (!report) {
+      return res.status(404).json({ error: "Store report not found" });
+    }
 
     const doc = new PDFDocument();
     res.setHeader("Content-Type", "application/pdf");
     doc.pipe(res);
 
-    doc.fontSize(20).text(`Store Report - ${report.storeName}`);
+    doc
+      .fontSize(20)
+      .text(
+        `Store Report - ${report.store.name} (#${report.store.storeNumber})`,
+      );
     doc.moveDown();
 
-    doc.fontSize(12).text(`KPIs:`);
-    doc.text(JSON.stringify(report.kpis, null, 2));
+    doc.fontSize(14).text("KPIs");
+    Object.entries(report.kpis).forEach(([key, value]) => {
+      doc.fontSize(12).text(`${key}: ${value}`);
+    });
     doc.moveDown();
 
-    doc.text(`Forecast:`);
-    doc.text(JSON.stringify(report.forecast, null, 2));
+    doc.fontSize(14).text("Forecast");
+    Object.entries(report.forecast).forEach(([key, value]) => {
+      doc.fontSize(12).text(`${key}: ${value}`);
+    });
 
     doc.end();
   } catch (err) {
@@ -37,6 +51,10 @@ router.get("/district/:districtId", async (req, res) => {
       districtId: req.params.districtId,
     });
 
+    if (!report) {
+      return res.status(404).json({ error: "District report not found" });
+    }
+
     const doc = new PDFDocument();
     res.setHeader("Content-Type", "application/pdf");
     doc.pipe(res);
@@ -44,12 +62,16 @@ router.get("/district/:districtId", async (req, res) => {
     doc.fontSize(20).text(`District Report - ${report.districtName}`);
     doc.moveDown();
 
-    doc.fontSize(12).text(`KPIs:`);
-    doc.text(JSON.stringify(report.kpis, null, 2));
+    doc.fontSize(14).text("KPIs");
+    Object.entries(report.kpis).forEach(([key, value]) => {
+      doc.fontSize(12).text(`${key}: ${value}`);
+    });
     doc.moveDown();
 
-    doc.text(`Forecast:`);
-    doc.text(JSON.stringify(report.forecast, null, 2));
+    doc.fontSize(14).text("Forecast");
+    Object.entries(report.forecast).forEach(([key, value]) => {
+      doc.fontSize(12).text(`${key}: ${value}`);
+    });
 
     doc.end();
   } catch (err) {

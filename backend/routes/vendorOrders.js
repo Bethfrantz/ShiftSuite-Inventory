@@ -6,20 +6,57 @@ const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 const Usage = require("../models/Usage");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // VENDOR ORDER AUTOMATION (UPGRADED)
-router.get("/:storeId", async (req, res) => {
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
     // Load items
-    const items = await Item.find().populate("vendorId").populate("categoryId");
+    const items = await Item.find()
+      .populate({ path: "vendorId", select: "name photoUrl color" })
+      .populate({ path: "categoryId", select: "name photoUrl color" });
+
+    if (!items.length) throwError("No items found", 404);
 
     // Load inventory
     const inventory = await InventoryCount.find({ storeId });
 
+    if (!inventory.length)
+      throwError("No inventory counts found for this store", 404);
     // Load usage for forecasting
     const since = new Date();
     since.setDate(since.getDate() - 7);
@@ -27,7 +64,22 @@ router.get("/:storeId", async (req, res) => {
     const usageRecords = await Usage.find({
       storeId,
       createdAt: { $gte: since },
-    }).populate("itemId");
+    }).populate({
+      path: "itemId",
+      populate: { path: "categoryId", select: "name photoUrl color" },
+    });
+    const wasteRecords = await Waste.find({
+      storeId,
+      ...dateQuery,
+    })
+      .populate({
+        path: "rawItemId",
+        populate: { path: "categoryId", select: "name photoUrl color" },
+      })
+      .populate({
+        path: "finishedProductId",
+        populate: { path: "categoryId", select: "name photoUrl color" },
+      });
 
     const suggestions = {};
 
@@ -41,13 +93,18 @@ router.get("/:storeId", async (req, res) => {
       const parEntry = item.parLevels?.find(
         (p) => p.storeId.toString() === storeId,
       );
+      if (!parEntry) throwError(`Par level missing for item ${item.name}`, 400);
       const par = parEntry ? parEntry.par : 0;
 
       suggestions[item._id] = {
         itemId: item._id,
         name: item.name,
         vendorId: item.vendorId?._id || null,
-        vendorName: item.vendorId?.name || item.vendor || "Unknown Vendor",
+        vendorName:
+          item.vendorId?.name?.trim() ||
+          item.vendor?.trim() ||
+          "Unknown Vendor",
+
         category: item.categoryId?.name || "Uncategorized",
         currentStock,
         parLevel: par,
@@ -139,9 +196,10 @@ router.get("/:storeId", async (req, res) => {
         storeNumber: store.storeNumber,
       },
       purchaseOrders,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

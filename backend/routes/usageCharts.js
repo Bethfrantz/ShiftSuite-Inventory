@@ -5,8 +5,39 @@ const Store = require("../models/Store");
 const Usage = require("../models/Usage");
 const Item = require("../models/Item");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // Store usage charts
-router.get("/:storeId", async (req, res) => {
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const { startDate, endDate, groupBy } = req.query;
@@ -23,12 +54,18 @@ router.get("/:storeId", async (req, res) => {
       : {};
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
     const usageRecords = await Usage.find({
       storeId,
       ...dateQuery,
-    }).populate("itemId");
+    }).populate({
+      path: "itemId",
+      populate: { path: "categoryId", select: "name photoUrl color" },
+    });
+
+    if (!usageRecords.length)
+      throwError("No usage records found for this store", 404);
 
     const chartData = {};
 
@@ -48,9 +85,9 @@ router.get("/:storeId", async (req, res) => {
         const d = new Date(u.createdAt);
         key = `${d.getFullYear()}-${d.getMonth() + 1}`;
       } else if (grouping === "category") {
-        key = item.categoryId?.toString() || "Uncategorized";
+        key = item.categoryId?._id?.toString() || "Uncategorized";
       } else if (grouping === "vendor") {
-        key = item.vendor || "Unknown Vendor";
+        key = item.vendor?.trim() || "Unknown Vendor";
       } else if (grouping === "item") {
         key = item._id.toString();
       }
@@ -68,7 +105,7 @@ router.get("/:storeId", async (req, res) => {
         itemId: item._id,
         name: item.name,
         vendor: item.vendor,
-        categoryId: item.categoryId,
+        categoryId: item.categoryId?._id || null,
         quantity: u.quantity,
       });
     }
@@ -81,9 +118,10 @@ router.get("/:storeId", async (req, res) => {
       },
       grouping,
       chartData,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

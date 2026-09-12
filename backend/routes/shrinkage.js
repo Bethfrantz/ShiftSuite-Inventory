@@ -2,20 +2,60 @@ const express = require("express");
 const router = express.Router();
 const InventorySnapshot = require("../models/InventorySnapshot");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // Shrinkage detection between two snapshots
-router.post("/:storeId/:snapshotA/:snapshotB", async (req, res) => {
+router.post("/:storeId/:snapshotA/:snapshotB", async (req, res, next) => {
   try {
     const { storeId, snapshotA, snapshotB } = req.params;
     const { expectedUsage } = req.body; // { itemId: number }
 
-    const snapA =
-      await InventorySnapshot.findById(snapshotA).populate("items.itemId");
-    const snapB =
-      await InventorySnapshot.findById(snapshotB).populate("items.itemId");
+    if (!expectedUsage || typeof expectedUsage !== "object")
+      throwError("Expected usage must be provided as an object", 400);
 
-    if (!snapA || !snapB) {
-      return res.status(404).json({ error: "Snapshots not found" });
-    }
+    const snapA = await InventorySnapshot.findById(snapshotA).populate({
+      path: "items.itemId",
+      populate: { path: "categoryId", select: "name photoUrl color" },
+    });
+
+    const snapB = await InventorySnapshot.findById(snapshotB).populate({
+      path: "items.itemId",
+      populate: { path: "categoryId", select: "name photoUrl color" },
+    });
+
+    if (!snapA || !snapB) throwError("One or both snapshots not found", 404);
+
+    if (!snapA.items.length || !snapB.items.length)
+      throwError("Snapshots contain no items", 404);
 
     const shrinkage = snapA.items.map((itemA) => {
       const itemB = snapB.items.find(
@@ -43,9 +83,10 @@ router.post("/:storeId/:snapshotA/:snapshotB", async (req, res) => {
       snapshotA,
       snapshotB,
       shrinkage,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

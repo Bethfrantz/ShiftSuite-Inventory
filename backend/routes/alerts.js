@@ -4,9 +4,40 @@ const axios = require("axios");
 
 const Store = require("../models/Store");
 
-// -----------------------------
-// ESCALATION HELPERS
-// -----------------------------
+/* -------------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------------
+   Middleware: Attach Request ID 
+------------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------------
+   Middleware: Logging
+------------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} - Body:`,
+    req.body,
+  );
+  next();
+});
+
+/* -------------------------------------------------------------
+   ESCALATION HELPERS
+------------------------------------------------------------- */
 function escalateSeverity(current, conditions) {
   let level = current;
 
@@ -73,15 +104,15 @@ function getRecommendedAction(kpi) {
   return actions[kpi] || "Review KPI details.";
 }
 
-// -----------------------------
-// ALERT ROUTE
-// -----------------------------
-router.get("/:storeId", async (req, res) => {
+/* -------------------------------------------------------------
+   ALERT ROUTE
+------------------------------------------------------------- */
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
     const dashboard = await axios
       .get(`http://localhost:5000/api/storeDashboard/${storeId}`)
@@ -96,9 +127,9 @@ router.get("/:storeId", async (req, res) => {
       storeScoreForecast,
     } = dashboard;
 
-    // -----------------------------
-    // KPI ESCALATION
-    // -----------------------------
+    /* -------------------------------------------------------------
+       KPI ESCALATION
+    ------------------------------------------------------------- */
     const anomalyCounts = {};
     kpiAnomalies.forEach((a) => {
       anomalyCounts[a.kpi] = (anomalyCounts[a.kpi] || 0) + 1;
@@ -128,9 +159,9 @@ router.get("/:storeId", async (req, res) => {
       };
     });
 
-    // -----------------------------
-    // STORE SCORE ALERT
-    // -----------------------------
+    /* -------------------------------------------------------------
+       STORE SCORE ALERT
+    ------------------------------------------------------------- */
     if (storeScoreTrend.overallTrend === "↓") {
       escalatedAlerts.push({
         type: "Store Score",
@@ -150,9 +181,10 @@ router.get("/:storeId", async (req, res) => {
         storeNumber: store.storeNumber,
       },
       alerts: escalatedAlerts,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

@@ -1,141 +1,116 @@
 const express = require("express");
 const router = express.Router();
 
-const Store = require("../models/Store");
-const InventoryCount = require("../models/InventoryCount");
 const FinishedProduct = require("../models/FinishedProduct");
-const Item = require("../models/Item");
-const Usage = require("../models/Usage");
+const InventoryCount = require("../models/InventoryCount");
 
-// BATCH PREP SCHEDULING
-router.get("/:storeId", async (req, res) => {
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
+// BATCH PREP INVENTORY DEDUCTION
+router.post("/:storeId/:finishedProductId", async (req, res, next) => {
   try {
-    const { storeId } = req.params;
+    const { storeId, finishedProductId } = req.params;
+    const { quantity } = req.body;
 
-    const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    const batchQty = Number(quantity || 1);
 
-    // Load finished products
-    const finishedProducts =
-      await FinishedProduct.find().populate("ingredients.itemId");
+    const fp =
+      await FinishedProduct.findById(finishedProductId).populate(
+        "ingredients.itemId",
+      );
 
-    // Load inventory
-    const inventory = await InventoryCount.find({ storeId });
+    if (!fp) throwError("Finished product not found", 404);
 
-    // Load last 30 days of usage for forecasting
-    const since = new Date();
-    since.setDate(since.getDate() - 30);
+    const deductionResults = [];
+    const warnings = [];
 
-    const usageRecords = await Usage.find({
-      storeId,
-      createdAt: { $gte: since },
-    }).populate("itemId");
+    for (const ing of fp.ingredients) {
+      const item = ing.itemId;
 
-    const schedule = {};
+      const requiredQty = ing.quantityUsed * batchQty;
 
-    // Initialize entries
-    for (const fp of finishedProducts) {
-      schedule[fp._id] = {
-        finishedProductId: fp._id,
-        name: fp.name,
-        photoUrl: fp.photoUrl,
-        forecastNext7Days: 0,
-        currentInventoryUnits: 0,
-        requiredPrepUnits: 0,
-        recommendedPrepTimes: [],
-        ingredients: [],
-      };
-    }
+      // FIXED: correct inventory lookup
+      let inventory = await InventoryCount.findOne({
+        storeId: storeId,
+        itemId: item._id,
+      });
 
-    // FORECAST DEMAND (same logic as demand forecasting)
-    for (const u of usageRecords) {
-      const item = u.itemId;
-      const daysAgo =
-        (Date.now() - u.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-
-      for (const fp of finishedProducts) {
-        const ingredient = fp.ingredients.find(
-          (ing) => ing.itemId._id.toString() === item._id.toString(),
-        );
-
-        if (!ingredient) continue;
-
-        const fpEntry = schedule[fp._id];
-        const fpUnits = u.quantity / ingredient.quantityUsed;
-
-        if (daysAgo <= 7) fpEntry.forecastNext7Days += fpUnits;
-      }
-    }
-
-    // CURRENT INVENTORY → convert raw inventory into finished product units
-    for (const fp of finishedProducts) {
-      const fpEntry = schedule[fp._id];
-
-      let possibleUnits = Infinity;
-
-      for (const ing of fp.ingredients) {
-        const item = ing.itemId;
-
-        const inv = inventory.find(
-          (i) => i.itemId.toString() === item._id.toString(),
-        );
-        const stock = inv ? inv.quantity : 0;
-
-        const unitsFromThisIngredient = stock / ing.quantityUsed;
-
-        possibleUnits = Math.min(possibleUnits, unitsFromThisIngredient);
-
-        fpEntry.ingredients.push({
+      if (!inventory) {
+        inventory = await InventoryCount.create({
+          storeId: storeId,
           itemId: item._id,
-          name: item.name,
-          stock,
-          quantityUsedPerUnit: ing.quantityUsed,
-          unitsPossible: unitsFromThisIngredient,
+          quantity: 0,
         });
       }
 
-      fpEntry.currentInventoryUnits = Math.floor(possibleUnits);
-    }
+      const beforeQty = inventory.quantity;
+      const afterQty = Math.max(0, beforeQty - requiredQty);
 
-    // REQUIRED PREP
-    for (const id in schedule) {
-      const fp = schedule[id];
+      inventory.quantity = afterQty;
+      await inventory.save();
 
-      const needed = fp.forecastNext7Days - fp.currentInventoryUnits;
-      fp.requiredPrepUnits = needed > 0 ? Math.ceil(needed) : 0;
-    }
+      deductionResults.push({
+        itemId: item._id,
+        name: item.name,
+        requiredQty,
+        beforeQty,
+        afterQty,
+        photoUrl: item.photoUrl,
+      });
 
-    // SCHEDULING LOGIC
-    for (const id in schedule) {
-      const fp = schedule[id];
+      // Par-level warning
+      const parLevel = item.parLevels?.find(
+        (p) => p.storeId.toString() === storeId,
+      );
 
-      if (fp.requiredPrepUnits === 0) {
-        fp.recommendedPrepTimes = ["No prep needed"];
-        continue;
+      if (parLevel && afterQty < parLevel.par) {
+        warnings.push({
+          itemId: item._id,
+          name: item.name,
+          message: `Stock below par level (${afterQty} < ${parLevel.par})`,
+        });
       }
-
-      // Split prep into time blocks
-      const morning = Math.ceil(fp.requiredPrepUnits * 0.5);
-      const midday = Math.ceil(fp.requiredPrepUnits * 0.3);
-      const evening = Math.ceil(fp.requiredPrepUnits * 0.2);
-
-      fp.recommendedPrepTimes = [
-        { time: "Morning (6–10 AM)", units: morning },
-        { time: "Midday (11 AM–2 PM)", units: midday },
-        { time: "Evening (4–7 PM)", units: evening },
-      ];
     }
 
     res.json({
-      store: {
-        id: store._id,
-        name: store.name,
-        storeNumber: store.storeNumber,
-      },
-      batchPrepSchedule: schedule,
+      finishedProductId: fp._id,
+      name: fp.name,
+      batchQuantity: batchQty,
+      deductions: deductionResults,
+      warnings,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

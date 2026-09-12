@@ -2,10 +2,40 @@ const express = require("express");
 const router = express.Router();
 
 const FinishedProduct = require("../models/FinishedProduct");
-const Item = require("../models/Item");
+
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
 
 // FINISHED PRODUCT COST CALCULATOR
-router.get("/:finishedProductId", async (req, res) => {
+router.get("/:finishedProductId", async (req, res, next) => {
   try {
     const { finishedProductId } = req.params;
     const { quantity } = req.query; // optional: calculate cost for multiple units
@@ -15,8 +45,7 @@ router.get("/:finishedProductId", async (req, res) => {
         "ingredients.itemId",
       );
 
-    if (!fp)
-      return res.status(404).json({ error: "Finished product not found" });
+    if (!fp) throwError("Finished product not found", 404);
 
     let totalCost = 0;
 
@@ -47,9 +76,10 @@ router.get("/:finishedProductId", async (req, res) => {
       quantityRequested: finalQuantity,
       totalCostForQuantity,
       ingredients: ingredientBreakdown,
+      requestId: req.requestId, // helpful for debugging
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err); // Step 3: Send errors to global handler
   }
 });
 

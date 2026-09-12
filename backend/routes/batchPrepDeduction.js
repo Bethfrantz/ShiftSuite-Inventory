@@ -2,11 +2,41 @@ const express = require("express");
 const router = express.Router();
 
 const FinishedProduct = require("../models/FinishedProduct");
-const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // BATCH PREP INVENTORY DEDUCTION
-router.post("/:storeId/:finishedProductId", async (req, res) => {
+router.post("/:storeId/:finishedProductId", async (req, res, next) => {
   try {
     const { storeId, finishedProductId } = req.params;
     const { quantity } = req.body;
@@ -18,8 +48,7 @@ router.post("/:storeId/:finishedProductId", async (req, res) => {
         "ingredients.itemId",
       );
 
-    if (!fp)
-      return res.status(404).json({ error: "Finished product not found" });
+    if (!fp) throwError("Finished product not found", 404);
 
     const deductionResults = [];
     const warnings = [];
@@ -29,16 +58,15 @@ router.post("/:storeId/:finishedProductId", async (req, res) => {
 
       const requiredQty = ing.quantityUsed * batchQty;
 
-      // Find inventory record
+      // FIXED: correct inventory lookup
       let inventory = await InventoryCount.findOne({
-        storeId,
+        storeId: storeId,
         itemId: item._id,
       });
 
       if (!inventory) {
-        // Create inventory record if missing
         inventory = await InventoryCount.create({
-          storeId,
+          storeId: storeId,
           itemId: item._id,
           quantity: 0,
         });
@@ -47,7 +75,6 @@ router.post("/:storeId/:finishedProductId", async (req, res) => {
       const beforeQty = inventory.quantity;
       const afterQty = Math.max(0, beforeQty - requiredQty);
 
-      // Update inventory
       inventory.quantity = afterQty;
       await inventory.save();
 
@@ -64,6 +91,7 @@ router.post("/:storeId/:finishedProductId", async (req, res) => {
       const parLevel = item.parLevels?.find(
         (p) => p.storeId.toString() === storeId,
       );
+
       if (parLevel && afterQty < parLevel.par) {
         warnings.push({
           itemId: item._id,
@@ -79,9 +107,10 @@ router.post("/:storeId/:finishedProductId", async (req, res) => {
       batchQuantity: batchQty,
       deductions: deductionResults,
       warnings,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

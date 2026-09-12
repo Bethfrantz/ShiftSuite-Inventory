@@ -9,28 +9,52 @@ const Waste = require("../models/Waste");
 const FinishedProduct = require("../models/FinishedProduct");
 const InventorySnapshot = require("../models/InventorySnapshot");
 
-// axios used to call your other internal routes
 const axios = require("axios");
 
-// STORE PERFORMANCE DASHBOARD (ENHANCED)
-router.get("/:storeId", async (req, res) => {
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
+// STORE PERFORMANCE DASHBOARD
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
-    const since = new Date();
-    since.setDate(since.getDate() - 7);
-
-    const since7 = new Date();
-    since7.setDate(since7.getDate() - 7);
-
-    const since14 = new Date();
-    since14.setDate(since14.getDate() - 14);
-
-    const since30 = new Date();
-    since30.setDate(since30.getDate() - 30);
+    // Date windows
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const since14 = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     // Historical usage
     const usage7 = await Usage.find({ storeId, createdAt: { $gte: since7 } });
@@ -42,15 +66,15 @@ router.get("/:storeId", async (req, res) => {
     const waste14 = await Waste.find({ storeId, createdAt: { $gte: since14 } });
     const waste30 = await Waste.find({ storeId, createdAt: { $gte: since30 } });
 
-    // Historical shrinkage (snapshot-based)
+    // Historical shrinkage snapshots
     const snapshots30 = await InventorySnapshot.find({ storeId })
       .sort({ createdAt: -1 })
       .limit(4)
       .populate("items.itemId");
 
-    // -----------------------------
-    // USAGE SUMMARY
-    // -----------------------------
+    /* -------------------------------------------------------
+       USAGE SUMMARY
+    ------------------------------------------------------- */
     const usageRecords = await Usage.find({
       storeId,
       createdAt: { $gte: since },
@@ -59,6 +83,7 @@ router.get("/:storeId", async (req, res) => {
     const usageSummary = {};
     for (const u of usageRecords) {
       const item = u.itemId;
+      if (!item) continue;
 
       if (!usageSummary[item._id]) {
         usageSummary[item._id] = {
@@ -71,9 +96,9 @@ router.get("/:storeId", async (req, res) => {
       usageSummary[item._id].quantity += u.quantity;
     }
 
-    // -----------------------------
-    // WASTE SUMMARY
-    // -----------------------------
+    /* -------------------------------------------------------
+       WASTE SUMMARY
+    ------------------------------------------------------- */
     const wasteRecords = await Waste.find({
       storeId,
       createdAt: { $gte: since },
@@ -83,9 +108,11 @@ router.get("/:storeId", async (req, res) => {
 
     const wasteSummary = {};
     for (const w of wasteRecords) {
-      const key = w.type === "raw" ? w.rawItemId._id : w.finishedProductId._id;
-      const name =
-        w.type === "raw" ? w.rawItemId.name : w.finishedProductId.name;
+      const source = w.type === "raw" ? w.rawItemId : w.finishedProductId;
+      if (!source) continue;
+
+      const key = source._id;
+      const name = source.name;
 
       if (!wasteSummary[key]) {
         wasteSummary[key] = {
@@ -99,9 +126,9 @@ router.get("/:storeId", async (req, res) => {
       wasteSummary[key].quantity += w.quantity;
     }
 
-    // -----------------------------
-    // SHRINKAGE SUMMARY
-    // -----------------------------
+    /* -------------------------------------------------------
+       SHRINKAGE SUMMARY
+    ------------------------------------------------------- */
     const snapshots = await InventorySnapshot.find({ storeId })
       .sort({ createdAt: -1 })
       .limit(2)
@@ -113,38 +140,44 @@ router.get("/:storeId", async (req, res) => {
       const snapA = snapshots[1];
       const snapB = snapshots[0];
 
-      shrinkageSummary = snapA.items.map((itemA) => {
-        const itemB = snapB.items.find(
-          (i) => i.itemId._id.toString() === itemA.itemId._id.toString(),
-        );
+      shrinkageSummary = (snapA.items || [])
+        .map((itemA) => {
+          const itemId = itemA.itemId?._id;
+          const name = itemA.itemId?.name;
+          if (!itemId) return null;
 
-        const qtyA = itemA.quantity;
-        const qtyB = itemB ? itemB.quantity : 0;
+          const itemB = (snapB.items || []).find(
+            (i) => i.itemId?._id?.toString() === itemId.toString(),
+          );
 
-        return {
-          itemId: itemA.itemId._id,
-          name: itemA.itemId.name,
-          shrinkage: qtyA - qtyB,
-        };
-      });
+          const qtyA = itemA.quantity ?? 0;
+          const qtyB = itemB?.quantity ?? 0;
+
+          return {
+            itemId,
+            name,
+            shrinkage: qtyA - qtyB,
+          };
+        })
+        .filter(Boolean);
     }
 
-    // -----------------------------
-    // INVENTORY SUMMARY (your old dashboard)
-    // -----------------------------
+    /* -------------------------------------------------------
+       INVENTORY SUMMARY
+    ------------------------------------------------------- */
     const items = await Item.find().populate("categoryId");
     const counts = await InventoryCount.find({ storeId });
 
     const inventorySummary = items.map((item) => {
-      const parEntry = item.parLevels.find(
+      const parEntry = item.parLevels?.find(
         (p) => p.storeId?.toString() === storeId,
       );
-      const par = parEntry ? parEntry.par : 0;
+      const par = parEntry?.par ?? 0;
 
       const countEntry = counts.find(
         (c) => c.itemId.toString() === item._id.toString(),
       );
-      const currentQuantity = countEntry ? countEntry.quantity : 0;
+      const currentQuantity = countEntry?.quantity ?? 0;
 
       const orderQuantity = Math.max(par - currentQuantity, 0);
 
@@ -153,16 +186,16 @@ router.get("/:storeId", async (req, res) => {
         name: item.name,
         photoUrl: item.photoUrl,
         vendor: item.vendor,
-        category: item.categoryId?.name,
+        category: item.categoryId?.name ?? null,
         par,
         currentQuantity,
         orderQuantity,
       };
     });
 
-    // -----------------------------
-    // CALL OTHER INTERNAL ROUTES
-    // -----------------------------
+    /* -------------------------------------------------------
+       INTERNAL ROUTE CALLS
+    ------------------------------------------------------- */
     const base = "http://localhost:5000/api";
 
     const [
@@ -183,9 +216,9 @@ router.get("/:storeId", async (req, res) => {
       axios.get(`${base}/batchPrepCalendar/${storeId}`).then((r) => r.data),
     ]);
 
-    // -----------------------------
-    // KPI SCORING ENGINE
-    // -----------------------------
+    /* -------------------------------------------------------
+       KPI SCORING ENGINE
+    ------------------------------------------------------- */
     function scoreKPI(value, good, ok, bad) {
       if (value <= good) return { score: 95, grade: "A", color: "green" };
       if (value <= ok) return { score: 80, grade: "B", color: "yellow" };
@@ -200,74 +233,61 @@ router.get("/:storeId", async (req, res) => {
       return "→";
     }
 
-    // Build KPI object
+    /* -------------------------------------------------------
+       KPI OBJECT
+    ------------------------------------------------------- */
+    const totalUsage = Object.values(usageSummary).reduce(
+      (sum, u) => sum + u.quantity,
+      0,
+    );
+
+    const totalWaste = Object.values(wasteSummary).reduce(
+      (sum, w) => sum + w.quantity,
+      0,
+    );
+
+    const totalShrinkage = shrinkageSummary.reduce(
+      (sum, s) => sum + s.shrinkage,
+      0,
+    );
+
     const kpis = {
       usageEfficiency: {
         label: "Usage Efficiency",
-        value: Object.values(usageSummary).reduce(
-          (sum, u) => sum + u.quantity,
-          0,
-        ),
-        ...scoreKPI(
-          Object.values(usageSummary).reduce((sum, u) => sum + u.quantity, 0),
-          500, // good
-          800, // ok
-          1200, // bad
-        ),
-        trend: trendArrow(
-          Object.values(usageSummary).reduce((sum, u) => sum + u.quantity, 0),
-          null,
-        ),
+        value: totalUsage,
+        ...scoreKPI(totalUsage, 500, 800, 1200),
+        trend: trendArrow(totalUsage, null),
         explanation: "Total raw usage over the last 7 days.",
       },
 
       wasteRate: {
         label: "Waste Rate",
-        value: Object.values(wasteSummary).reduce(
-          (sum, w) => sum + w.quantity,
-          0,
-        ),
-        ...scoreKPI(
-          Object.values(wasteSummary).reduce((sum, w) => sum + w.quantity, 0),
-          20, // good
-          40, // ok
-          80, // bad
-        ),
-        trend: trendArrow(
-          Object.values(wasteSummary).reduce((sum, w) => sum + w.quantity, 0),
-          null,
-        ),
+        value: totalWaste,
+        ...scoreKPI(totalWaste, 20, 40, 80),
+        trend: trendArrow(totalWaste, null),
         explanation: "Total waste units over the last 7 days.",
       },
 
       shrinkageRate: {
         label: "Shrinkage Rate",
-        value: shrinkageSummary.reduce((sum, s) => sum + s.shrinkage, 0),
-        ...scoreKPI(
-          shrinkageSummary.reduce((sum, s) => sum + s.shrinkage, 0),
-          10, // good
-          25, // ok
-          50, // bad
-        ),
-        trend: trendArrow(
-          shrinkageSummary.reduce((sum, s) => sum + s.shrinkage, 0),
-          null,
-        ),
+        value: totalShrinkage,
+        ...scoreKPI(totalShrinkage, 10, 25, 50),
+        trend: trendArrow(totalShrinkage, null),
         explanation: "Difference between last two inventory snapshots.",
       },
 
       prepAccuracy: {
         label: "Prep Accuracy",
-        value: batchPrepSchedule
+        value: batchPrepSchedule?.batchPrepSchedule
           ? Object.values(batchPrepSchedule.batchPrepSchedule).length
           : 0,
         ...scoreKPI(
-          batchPrepSchedule
+          batchPrepSchedule?.batchPrepSchedule
             ? Object.values(batchPrepSchedule.batchPrepSchedule).length
             : 0,
-          5, // good
-          10, // ok
-          20, // bad
+          5,
+          10,
+          20,
         ),
         trend: "→",
         explanation: "Number of items requiring prep vs forecast.",
@@ -275,69 +295,77 @@ router.get("/:storeId", async (req, res) => {
 
       staffingAlignment: {
         label: "Staffing Alignment",
-        value: staffing
-          ? staffing.staffingRecommendations.midday.recommendedStaff.total
-          : 0,
+        value:
+          staffing?.staffingRecommendations?.midday?.recommendedStaff?.total ??
+          0,
+
         ...scoreKPI(
-          staffing
-            ? staffing.staffingRecommendations.midday.recommendedStaff.total
-            : 0,
+          staffing?.staffingRecommendations?.midday?.recommendedStaff?.total ??
+            0,
           6, // good
           10, // ok
           14, // bad
         ),
+
         trend: "→",
         explanation: "Staffing match to demand forecast.",
       },
 
       replenishmentCompliance: {
         label: "Replenishment Compliance",
-        value: replenishment
+        value: replenishment?.rawSuggestions
           ? Object.values(replenishment.rawSuggestions).length
           : 0,
+
         ...scoreKPI(
-          replenishment
+          replenishment?.rawSuggestions
             ? Object.values(replenishment.rawSuggestions).length
             : 0,
           10, // good
           20, // ok
           40, // bad
         ),
+
         trend: "→",
         explanation: "Number of items below par or forecast.",
       },
     };
+
     const kpiHistory = {
       usageEfficiency: {
         "7d": usage7.reduce((sum, u) => sum + u.quantity, 0),
         "14d": usage14.reduce((sum, u) => sum + u.quantity, 0),
         "30d": usage30.reduce((sum, u) => sum + u.quantity, 0),
       },
+
       wasteRate: {
         "7d": waste7.reduce((sum, w) => sum + w.quantity, 0),
         "14d": waste14.reduce((sum, w) => sum + w.quantity, 0),
         "30d": waste30.reduce((sum, w) => sum + w.quantity, 0),
       },
+
       shrinkageRate: {
         "7d": shrinkageSummary.reduce((sum, s) => sum + s.shrinkage, 0),
+
         "14d":
           snapshots30.length >= 3
             ? snapshots30[2].items.reduce((sum, itemA) => {
                 const itemB = snapshots30[1].items.find(
                   (i) =>
-                    i.itemId._id.toString() === itemA.itemId._id.toString(),
+                    i.itemId?._id?.toString() === itemA.itemId?._id?.toString(),
                 );
-                return sum + (itemA.quantity - (itemB ? itemB.quantity : 0));
+                return sum + (itemA.quantity - (itemB?.quantity ?? 0));
               }, 0)
             : 0,
+
         "30d":
           snapshots30.length >= 4
             ? snapshots30[3].items.reduce((sum, itemA) => {
                 const itemB = snapshots30[1].items.find(
                   (i) =>
-                    i.itemId._id.toString() === itemA.itemId._id.toString(),
+                    i.itemId?._id?.toString() === itemA.itemId?._id?.toString(),
                 );
-                return sum + (itemA.quantity - (itemB ? itemB.quantity : 0));
+                return sum + (itemA.quantity - (itemB?.quantity ?? 0));
               }, 0)
             : 0,
       },
@@ -364,6 +392,7 @@ router.get("/:storeId", async (req, res) => {
         overallTrend: trendArrow(h["7d"], h["30d"]),
       };
     }
+
     // -----------------------------
     // KPI TREND CHART DATA
     // -----------------------------
@@ -418,6 +447,7 @@ router.get("/:storeId", async (req, res) => {
           direction === "up" ? "green" : direction === "down" ? "red" : "gray",
       };
     }
+
     // -----------------------------
     // STORE SCORE HISTORY
     // -----------------------------
@@ -427,12 +457,12 @@ router.get("/:storeId", async (req, res) => {
           usageEfficiency: { score: kpiHistoryScores.usageEfficiency["7d"] },
           wasteRate: { score: kpiHistoryScores.wasteRate["7d"] },
           shrinkageRate: { score: kpiHistoryScores.shrinkageRate["7d"] },
-          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["7d"] || 80 },
+          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["7d"] ?? 80 },
           staffingAlignment: {
-            score: kpiHistoryScores.staffingAlignment?.["7d"] || 80,
+            score: kpiHistoryScores.staffingAlignment?.["7d"] ?? 80,
           },
           replenishmentCompliance: {
-            score: kpiHistoryScores.replenishmentCompliance?.["7d"] || 80,
+            score: kpiHistoryScores.replenishmentCompliance?.["7d"] ?? 80,
           },
         },
         weights,
@@ -443,12 +473,12 @@ router.get("/:storeId", async (req, res) => {
           usageEfficiency: { score: kpiHistoryScores.usageEfficiency["14d"] },
           wasteRate: { score: kpiHistoryScores.wasteRate["14d"] },
           shrinkageRate: { score: kpiHistoryScores.shrinkageRate["14d"] },
-          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["14d"] || 75 },
+          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["14d"] ?? 75 },
           staffingAlignment: {
-            score: kpiHistoryScores.staffingAlignment?.["14d"] || 75,
+            score: kpiHistoryScores.staffingAlignment?.["14d"] ?? 75,
           },
           replenishmentCompliance: {
-            score: kpiHistoryScores.replenishmentCompliance?.["14d"] || 75,
+            score: kpiHistoryScores.replenishmentCompliance?.["14d"] ?? 75,
           },
         },
         weights,
@@ -459,17 +489,18 @@ router.get("/:storeId", async (req, res) => {
           usageEfficiency: { score: kpiHistoryScores.usageEfficiency["30d"] },
           wasteRate: { score: kpiHistoryScores.wasteRate["30d"] },
           shrinkageRate: { score: kpiHistoryScores.shrinkageRate["30d"] },
-          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["30d"] || 70 },
+          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["30d"] ?? 70 },
           staffingAlignment: {
-            score: kpiHistoryScores.staffingAlignment?.["30d"] || 70,
+            score: kpiHistoryScores.staffingAlignment?.["30d"] ?? 70,
           },
           replenishmentCompliance: {
-            score: kpiHistoryScores.replenishmentCompliance?.["30d"] || 70,
+            score: kpiHistoryScores.replenishmentCompliance?.["30d"] ?? 70,
           },
         },
         weights,
       ),
     };
+
     const storeScoreTrend = {
       trend7to14: trendArrow(storeScoreHistory["7d"], storeScoreHistory["14d"]),
       trend14to30: trendArrow(
@@ -491,11 +522,13 @@ router.get("/:storeId", async (req, res) => {
             ? "red"
             : "gray",
     };
+
     const storeScoreTrendChart = [
       { label: "7d", score: storeScoreHistory["7d"] },
       { label: "14d", score: storeScoreHistory["14d"] },
       { label: "30d", score: storeScoreHistory["30d"] },
     ];
+
     // -----------------------------
     // STORE SCORE FORECAST
     // -----------------------------
@@ -522,11 +555,11 @@ router.get("/:storeId", async (req, res) => {
         band: forecast30dBand,
       },
     };
+
     // -----------------------------
     // STORE SCORE FORECAST VISUALIZATION
     // -----------------------------
     const storeScoreForecastChart = [
-      // Historical
       {
         label: "30d",
         score: storeScoreHistory["30d"],
@@ -556,8 +589,6 @@ router.get("/:storeId", async (req, res) => {
         type: "current",
         color: "blue",
       },
-
-      // Forecast 7d
       {
         label: "Forecast 7d",
         score: storeScoreForecast["7d"].center,
@@ -569,8 +600,8 @@ router.get("/:storeId", async (req, res) => {
       // Forecast 30d
       {
         label: "Forecast 30d",
-        score: storeScoreForecast["30d"].center,
-        band: storeScoreForecast["30d"].band,
+        score: storeScoreForecast?.["30d"]?.center ?? 0,
+        band: storeScoreForecast?.["30d"]?.band ?? null,
         type: "forecast",
         color: "purple",
       },
@@ -582,55 +613,56 @@ router.get("/:storeId", async (req, res) => {
     const kpiAnomalies = [];
 
     for (const key in kpiHistory) {
-      const hist = kpiHistory[key];
+      const hist = kpiHistory[key] || {};
 
-      const change7to14 = pctChange(hist["7d"], hist["14d"]);
-      const change14to30 = pctChange(hist["14d"], hist["30d"]);
+      const change7to14 = pctChange(hist["7d"] ?? 0, hist["14d"] ?? 0);
+      const change14to30 = pctChange(hist["14d"] ?? 0, hist["30d"] ?? 0);
 
       if (isSpike(change7to14)) {
         kpiAnomalies.push({
-          kpi: kpis[key].label,
+          kpi: kpis[key]?.label ?? key,
           type: "Spike",
-          detail: `${kpis[key].label} increased by ${change7to14.toFixed(1)}% from 7d to 14d.`,
+          detail: `${kpis[key]?.label ?? key} increased by ${change7to14.toFixed(1)}% from 7d to 14d.`,
           severity: "high",
         });
       }
 
       if (isDrop(change7to14)) {
         kpiAnomalies.push({
-          kpi: kpis[key].label,
+          kpi: kpis[key]?.label ?? key,
           type: "Drop",
-          detail: `${kpis[key].label} decreased by ${Math.abs(change7to14).toFixed(1)}% from 7d to 14d.`,
+          detail: `${kpis[key]?.label ?? key} decreased by ${Math.abs(change7to14).toFixed(1)}% from 7d to 14d.`,
           severity: "medium",
         });
       }
 
       if (isSpike(change14to30)) {
         kpiAnomalies.push({
-          kpi: kpis[key].label,
+          kpi: kpis[key]?.label ?? key,
           type: "Spike",
-          detail: `${kpis[key].label} increased by ${change14to30.toFixed(1)}% from 14d to 30d.`,
+          detail: `${kpis[key]?.label ?? key} increased by ${change14to30.toFixed(1)}% from 14d to 30d.`,
           severity: "high",
         });
       }
 
       if (isDrop(change14to30)) {
         kpiAnomalies.push({
-          kpi: kpis[key].label,
+          kpi: kpis[key]?.label ?? key,
           type: "Drop",
-          detail: `${kpis[key].label} decreased by ${Math.abs(change14to30).toFixed(1)}% from 14d to 30d.`,
+          detail: `${kpis[key]?.label ?? key} decreased by ${Math.abs(change14to30).toFixed(1)}% from 14d to 30d.`,
           severity: "medium",
         });
       }
     }
+
     // -----------------------------
     // OPERATIONAL ANOMALIES
     // -----------------------------
 
     // Waste anomaly
-    const waste7 = kpiHistory.wasteRate["7d"];
-    const waste14 = kpiHistory.wasteRate["14d"];
-    const waste30 = kpiHistory.wasteRate["30d"];
+    const waste7 = kpiHistory.wasteRate?.["7d"] ?? 0;
+    const waste14 = kpiHistory.wasteRate?.["14d"] ?? 0;
+    const waste30 = kpiHistory.wasteRate?.["30d"] ?? 0;
     const wasteAvg = (waste7 + waste14 + waste30) / 3;
 
     if (isDeviation(waste7, wasteAvg)) {
@@ -643,9 +675,11 @@ router.get("/:storeId", async (req, res) => {
     }
 
     // Shrinkage anomaly
-    const shrink7 = kpiHistory.shrinkageRate["7d"];
+    const shrink7 = kpiHistory.shrinkageRate?.["7d"] ?? 0;
     const shrinkAvg =
-      (kpiHistory.shrinkageRate["14d"] + kpiHistory.shrinkageRate["30d"]) / 2;
+      ((kpiHistory.shrinkageRate?.["14d"] ?? 0) +
+        (kpiHistory.shrinkageRate?.["30d"] ?? 0)) /
+      2;
 
     if (isDeviation(shrink7, shrinkAvg)) {
       kpiAnomalies.push({
@@ -657,8 +691,8 @@ router.get("/:storeId", async (req, res) => {
     }
 
     // Store score anomaly
-    const score7 = storeScoreHistory["7d"];
-    const score30 = storeScoreHistory["30d"];
+    const score7 = storeScoreHistory?.["7d"] ?? 0;
+    const score30 = storeScoreHistory?.["30d"] ?? 0;
     const scoreChange = pctChange(score30, score7);
 
     if (isDrop(scoreChange, -10)) {
@@ -688,17 +722,17 @@ router.get("/:storeId", async (req, res) => {
       for (const key in weights) {
         const kpi = kpis[key];
         if (!kpi) continue;
-
-        total += kpi.score * weights[key];
+        total += (kpi.score ?? 0) * weights[key];
       }
 
       return Math.round(total);
     }
+
     // -----------------------------
     // ANOMALY DETECTION HELPERS
     // -----------------------------
     function pctChange(oldVal, newVal) {
-      if (oldVal === 0) return 0;
+      if (!oldVal) return 0;
       return ((newVal - oldVal) / oldVal) * 100;
     }
 
@@ -711,11 +745,12 @@ router.get("/:storeId", async (req, res) => {
     }
 
     function isDeviation(value, avg, threshold = 30) {
-      if (avg === 0) return false;
+      if (!avg) return false;
       return Math.abs(((value - avg) / avg) * 100) >= threshold;
     }
+
     function exponentialSmooth(values, alpha = 0.5) {
-      if (!values.length) return 0;
+      if (!values?.length) return 0;
 
       let smoothed = values[0];
 
@@ -743,16 +778,21 @@ router.get("/:storeId", async (req, res) => {
       if (score >= 60) return { grade: "D", color: "red" };
       return { grade: "F", color: "darkred" };
     }
+
     function forecastSlopeDirection(current, future) {
       if (future > current) return "up";
       if (future < current) return "down";
       return "flat";
     }
+
     const storeScoreForecastSlope = {
-      "7d": forecastSlopeDirection(storeScore, storeScoreForecast["7d"].center),
+      "7d": forecastSlopeDirection(
+        storeScore,
+        storeScoreForecast?.["7d"]?.center ?? 0,
+      ),
       "30d": forecastSlopeDirection(
         storeScore,
-        storeScoreForecast["30d"].center,
+        storeScoreForecast?.["30d"]?.center ?? 0,
       ),
     };
 
@@ -794,17 +834,13 @@ router.get("/:storeId", async (req, res) => {
       storeScoreTrend,
       storeScoreTrendChart,
       kpiAnomalies,
-      storeScoreHistory,
-      storeScoreTrend,
-      storeScoreTrendChart,
-      storeScoreForecast,
-      kpiAnomalies,
       storeScoreForecast,
       storeScoreForecastChart,
       storeScoreForecastSlope,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

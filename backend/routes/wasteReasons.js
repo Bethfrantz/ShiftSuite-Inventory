@@ -4,33 +4,82 @@ const router = express.Router();
 const Store = require("../models/Store");
 const Waste = require("../models/Waste");
 const FinishedProduct = require("../models/FinishedProduct");
-const Item = require("../models/Item");
 
-// Waste reasons dashboard
-router.get("/:storeId", async (req, res) => {
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
+/* -------------------------------------------------------
+   Waste Reasons Dashboard (Fixed)
+------------------------------------------------------- */
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const { startDate, endDate } = req.query;
+
+    if (!storeId) throwError("storeId is required", 400);
 
     const dateFilter = {};
     if (startDate) dateFilter.$gte = new Date(startDate);
     if (endDate) dateFilter.$lte = new Date(endDate);
 
-    const dateQuery = Object.keys(dateFilter).length
-      ? { createdAt: dateFilter }
-      : {};
+    const dateQuery =
+      Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
+    /* -------------------------------------------------------
+       Deep populate (fixes N+1 problem)
+    ------------------------------------------------------- */
     const wasteRecords = await Waste.find({
       storeId,
       ...dateQuery,
     })
-      .populate("rawItemId")
-      .populate("finishedProductId");
+      .populate({
+        path: "rawItemId",
+        select: "name currentPrice photoUrl",
+      })
+      .populate({
+        path: "finishedProductId",
+        select: "name photoUrl",
+        populate: {
+          path: "ingredients.itemId",
+          select: "name currentPrice photoUrl",
+        },
+      });
 
-    const reasons = {}; // reason → { count, cost }
+    if (!wasteRecords.length)
+      throwError("No waste records found for this store", 404);
+
+    const reasons = {};
 
     for (const w of wasteRecords) {
       const reason = w.reason || "Unspecified";
@@ -44,9 +93,15 @@ router.get("/:storeId", async (req, res) => {
         };
       }
 
-      // RAW WASTE
+      /* -------------------------------------------------------
+         RAW WASTE
+      ------------------------------------------------------- */
       if (w.type === "raw") {
         const item = w.rawItemId;
+
+        if (!item)
+          throwError("Raw item reference missing in waste record", 500);
+
         const cost = item.currentPrice * w.quantity;
 
         reasons[reason].count += w.quantity;
@@ -62,11 +117,14 @@ router.get("/:storeId", async (req, res) => {
         });
       }
 
-      // FINISHED PRODUCT WASTE
+      /* -------------------------------------------------------
+         FINISHED PRODUCT WASTE
+      ------------------------------------------------------- */
       if (w.type === "finished") {
-        const finished = await FinishedProduct.findById(
-          w.finishedProductId,
-        ).populate("ingredients.itemId");
+        const finished = w.finishedProductId;
+
+        if (!finished)
+          throwError("Finished product reference missing in waste record", 500);
 
         let finishedCost = 0;
 
@@ -107,9 +165,10 @@ router.get("/:storeId", async (req, res) => {
         storeNumber: store.storeNumber,
       },
       reasons,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 

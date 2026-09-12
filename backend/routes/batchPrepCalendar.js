@@ -6,19 +6,50 @@ const InventoryCount = require("../models/InventoryCount");
 const FinishedProduct = require("../models/FinishedProduct");
 const Usage = require("../models/Usage");
 
+/* -------------------------------------------------------
+   Helper: Throw formatted errors
+------------------------------------------------------- */
+const throwError = (message, statusCode = 400) => {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  throw err;
+};
+
+/* -------------------------------------------------------
+   Middleware: Attach Request ID (Step 5)
+------------------------------------------------------- */
+const { v4: uuid } = require("uuid");
+
+router.use((req, res, next) => {
+  req.requestId = uuid();
+  res.setHeader("X-Request-ID", req.requestId);
+  next();
+});
+
+/* -------------------------------------------------------
+   Middleware: Logging (Step 6)
+------------------------------------------------------- */
+router.use((req, res, next) => {
+  console.log(
+    `[${req.requestId}] ${req.method} ${req.originalUrl} — Body:`,
+    req.body,
+  );
+  next();
+});
+
 // BATCH PREP CALENDAR
-router.get("/:storeId", async (req, res) => {
+router.get("/:storeId", async (req, res, next) => {
   try {
     const { storeId } = req.params;
 
     const store = await Store.findById(storeId);
-    if (!store) return res.status(404).json({ error: "Store not found" });
+    if (!store) throwError("Store not found", 404);
 
     // Load finished products
     const finishedProducts =
       await FinishedProduct.find().populate("ingredients.itemId");
 
-    // Load inventory
+    // FIXED: Inventory lookup
     const inventory = await InventoryCount.find({ storeId });
 
     // Load usage for forecasting
@@ -32,7 +63,7 @@ router.get("/:storeId", async (req, res) => {
 
     const calendarEvents = [];
 
-    // FORECAST DEMAND (same logic as demand forecasting)
+    // FORECAST DEMAND
     const forecastMap = {};
 
     for (const fp of finishedProducts) {
@@ -74,7 +105,6 @@ router.get("/:storeId", async (req, res) => {
       const avg30 = f.usage30 / 30;
 
       const movingAverage = avg7 * 0.5 + avg14 * 0.3 + avg30 * 0.2;
-
       const trend = avg7 > avg14 ? 1.15 : avg7 < avg14 ? 0.9 : 1.0;
 
       forecastNext7[fp._id] = Math.round(movingAverage * trend * 7);
@@ -198,9 +228,10 @@ router.get("/:storeId", async (req, res) => {
         storeNumber: store.storeNumber,
       },
       calendar: calendarEvents,
+      requestId: req.requestId,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 });
 
