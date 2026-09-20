@@ -1,38 +1,71 @@
+/* ROOT APP WRAPPER */
 .App {
-  text-align: center;
+  min-height: 100vh;
+  background: transparent;
+  color: var(--color-text);
+  font-family: sans-serif;
+  display: block;
 }
 
+/* OPTIONAL GLOBAL PAGE CONTAINER */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-32);
+  margin-top: var(--space-24);
+}
+
+/* REMOVE OLD LOGO + HEADER STYLES */
 .App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+  display: none;
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  display: none;
 }
 
-.App-link {
-  color: #61dafb;
+/* GLOBAL LINKS */
+a {
+  color: var(--elmos-red);
+  text-decoration: none;
+  font-weight: 600;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+a:hover {
+  text-decoration: underline;
+}
+
+/* GLOBAL BUTTON BASELINE */
+button {
+  font-family: inherit;
+  font-size: 16px;
+}
+
+/* GLOBAL CARD BASELINE */
+.card {
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: var(--space-24);
+}
+
+/* UTILITY SPACING */
+.mt-16 {
+  margin-top: var(--space-16);
+}
+.mt-24 {
+  margin-top: var(--space-24);
+}
+.mt-32 {
+  margin-top: var(--space-32);
+}
+
+.mb-16 {
+  margin-bottom: var(--space-16);
+}
+.mb-24 {
+  margin-bottom: var(--space-24);
+}
+.mb-32 {
+  margin-bottom: var(--space-32);
 }

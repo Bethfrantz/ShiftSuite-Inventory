@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./WasteCost.css";
+import styles from "../styles/pages/WasteCost.module.css";
 
 export default function WasteCost() {
   const [stores, setStores] = useState([]);
@@ -21,16 +21,16 @@ export default function WasteCost() {
     const res = await API.getWasteCost(storeId, startDate, endDate);
     setData(res);
   }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadStores();
   }, []);
 
   return (
-    <div className="waste-cost-page">
+    <div className={styles.wasteCostPage}>
       <h1>Waste Cost Analysis</h1>
 
-      <div className="controls">
+      <div className={styles.controls}>
         <select value={storeId} onChange={(e) => setStoreId(e.target.value)}>
           <option value="">Select Store</option>
           {stores.map((s) => (
@@ -52,13 +52,13 @@ export default function WasteCost() {
           onChange={(e) => setEndDate(e.target.value)}
         />
 
-        <button className="load-button" onClick={loadWasteCost}>
+        <button className={styles.loadButton} onClick={loadWasteCost}>
           Load Cost
         </button>
 
         {data && (
           <button
-            className="print-button"
+            className={styles.printButton}
             onClick={() =>
               window.open(
                 `/print/waste-cost/${storeId}?start=${startDate}&end=${endDate}`,
@@ -76,26 +76,30 @@ export default function WasteCost() {
       {data && (
         <>
           {/* Summary */}
-          <div className="summary-grid">
-            <div className="summary-card">
+          <div className={styles.summaryGrid}>
+            <div className={styles.summaryCard}>
               <h3>Total Waste Cost</h3>
-              <p className="summary-value">${data.totalCost.toFixed(2)}</p>
+              <p className={styles.summaryValue}>
+                ${data.totalCost.toFixed(2)}
+              </p>
             </div>
 
-            <div className="summary-card">
+            <div className={styles.summaryCard}>
               <h3>Raw Waste Items</h3>
-              <p className="summary-value">{data.rawWasteCost.length}</p>
+              <p className={styles.summaryValue}>{data.rawWasteCost.length}</p>
             </div>
 
-            <div className="summary-card">
+            <div className={styles.summaryCard}>
               <h3>Finished Product Waste</h3>
-              <p className="summary-value">{data.finishedWasteCost.length}</p>
+              <p className={styles.summaryValue}>
+                {data.finishedWasteCost.length}
+              </p>
             </div>
           </div>
 
           {/* Raw Waste Table */}
           <h2>Raw Waste Cost</h2>
-          <table className="waste-table">
+          <table className={styles.wasteTable}>
             <thead>
               <tr>
                 <th>Item</th>
@@ -120,7 +124,7 @@ export default function WasteCost() {
 
           {/* Finished Product Waste */}
           <h2>Finished Product Waste Cost</h2>
-          <table className="waste-table">
+          <table className={styles.wasteTable}>
             <thead>
               <tr>
                 <th>Product</th>
@@ -139,7 +143,7 @@ export default function WasteCost() {
                   <td>{fp.reason}</td>
                   <td>
                     <button
-                      className="ingredient-button"
+                      className={styles.ingredientButton}
                       onClick={() => setSelectedFinished(fp)}
                     >
                       View Ingredients
@@ -152,11 +156,11 @@ export default function WasteCost() {
 
           {/* Ingredient Breakdown Modal */}
           {selectedFinished && (
-            <div className="modal-overlay">
-              <div className="modal-box">
+            <div className={styles.modalOverlay}>
+              <div className={styles.modalBox}>
                 <h3>{selectedFinished.name} — Ingredient Cost Breakdown</h3>
 
-                <table className="ingredient-table">
+                <table className={styles.ingredientTable}>
                   <thead>
                     <tr>
                       <th>Ingredient</th>
@@ -178,7 +182,7 @@ export default function WasteCost() {
                 </table>
 
                 <button
-                  className="close-button"
+                  className={styles.closeButton}
                   onClick={() => setSelectedFinished(null)}
                 >
                   Close

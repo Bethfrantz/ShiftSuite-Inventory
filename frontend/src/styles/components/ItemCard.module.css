@@ -1,0 +1,130 @@
+.card {
+  background: var(--elmos-yellow);
+  border: 3px solid var(--elmos-red);
+  border-radius: var(--radius-lg);
+  padding: var(--space-20);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* Photo */
+.photoWrapper {
+  width: 100%;
+  height: 160px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--elmos-yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  color: var(--elmos-black);
+  font-weight: 600;
+}
+
+/* Content */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--elmos-black);
+}
+
+.detail {
+  font-size: 15px;
+  color: var(--elmos-black);
+}
+
+/* Category */
+.categoryRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+
+.categoryPhoto {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.categoryPlaceholder {
+  width: 50px;
+  height: 50px;
+  background: var(--elmos-yellow);
+  color: var(--elmos-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+.categoryName {
+  font-weight: 600;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-12);
+}
+
+.viewButton {
+  background: var(--elmos-yellow);
+  color: var(--elmos-black);
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.viewButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.editButton {
+  background: var(--elmos-red);
+  color: var(--elmos-gray);
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.editButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}

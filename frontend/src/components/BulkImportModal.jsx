@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./BulkImportModal.css";
+import styles from "../styles/modals/BulkImportModal.module.css";
 
 export default function BulkImportModal({ onClose, onUpload }) {
   const [file, setFile] = useState(null);

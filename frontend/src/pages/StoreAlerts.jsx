@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./StoreAlerts.css";
+import styles from "../styles/pages/StoreAlerts.module.css";
 import { useNavigate } from "react-router-dom";
 
 export default function StoreAlerts() {
@@ -12,7 +12,7 @@ export default function StoreAlerts() {
 
   async function loadStores() {
     const data = await API.getStores();
-    setStores(data);
+    setStores(data.stores);
   }
 
   async function loadAlerts() {
@@ -20,7 +20,7 @@ export default function StoreAlerts() {
     const data = await API.getAlerts(storeId);
     setAlerts(data.alerts);
   }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadStores();
   }, []);
@@ -30,13 +30,13 @@ export default function StoreAlerts() {
   }, [storeId]);
 
   return (
-    <div className="alerts-page">
+    <div className={styles.alertsPage}>
       <h1>Store Alerts</h1>
 
-      <div className="alerts-controls">
+      <div className={styles.alertsControls}>
         <select value={storeId} onChange={(e) => setStoreId(e.target.value)}>
           <option value="">Select Store</option>
-          {stores.map((s) => (
+          {stores?.map((s) => (
             <option key={s._id} value={s._id}>
               {s.name}
             </option>
@@ -45,7 +45,7 @@ export default function StoreAlerts() {
 
         {alerts.length > 0 && (
           <button
-            className="print-button"
+            className={styles.printButton}
             onClick={() => window.open(`/print/alerts/${storeId}`, "_blank")}
           >
             Print Alerts
@@ -53,46 +53,51 @@ export default function StoreAlerts() {
         )}
       </div>
 
-      <div className="alerts-list">
+      <div className={styles.alertsList}>
         {alerts.length === 0 && <p>No alerts for this store.</p>}
 
         {alerts.map((a, idx) => (
-          <div className={`alert-card severity-${a.severity}`} key={idx}>
-            <div className="alert-header">
-              <span className="alert-type">{a.type}</span>
-              <span className="alert-severity">{a.severity.toUpperCase()}</span>
+          <div
+            className={`${styles.alertCard} ${styles[`severity-${a.severity}`]}`}
+            key={idx}
+          >
+            <div className={styles.alertHeader}>
+              <span className={styles.alertType}>{a.type}</span>
+              <span className={styles.alertSeverity}>
+                {a.severity.toUpperCase()}
+              </span>
             </div>
 
-            <div className="alert-body">
+            <div className={styles.alertBody}>
               <h3>{a.kpi || "Store Score"}</h3>
               <p>{a.message}</p>
 
-              <p className="alert-action">
+              <p className={styles.alertAction}>
                 <strong>Recommended Action:</strong> {a.recommendedAction}
               </p>
 
-              <p className="alert-time">
+              <p className={styles.alertTime}>
                 {new Date(a.timestamp).toLocaleString()}
               </p>
             </div>
 
-            <div className="alert-actions">
+            <div className={styles.alertActions}>
               <button
-                className="action-button"
+                className={styles.actionButton}
                 onClick={() => navigate(`/dashboard?store=${storeId}`)}
               >
                 View Dashboard
               </button>
 
               <button
-                className="action-button"
+                className={styles.actionButton}
                 onClick={() => navigate(`/reports?store=${storeId}`)}
               >
                 View Reports
               </button>
 
               <button
-                className="action-button"
+                className={styles.actionButton}
                 onClick={() => navigate(`/count-history?store=${storeId}`)}
               >
                 Count History

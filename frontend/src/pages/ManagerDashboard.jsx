@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./ManagerDashboard.css";
+import styles from "../styles/pages/ManagerDashboard.module.css";
 import { useNavigate } from "react-router-dom";
 
 export default function ManagerDashboard() {
@@ -10,7 +10,7 @@ export default function ManagerDashboard() {
 
   async function loadStores() {
     const data = await API.getStores();
-    setStores(data);
+    setStores(stores);
   }
 
   async function loadDashboards() {
@@ -23,7 +23,7 @@ export default function ManagerDashboard() {
 
     setDashboards(results);
   }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadStores();
   }, []);
@@ -33,22 +33,22 @@ export default function ManagerDashboard() {
   }, [stores]);
 
   return (
-    <div className="manager-dashboard-page">
+    <div className={styles.managerDashboardPage}>
       <h1>Manager Dashboard</h1>
 
-      <div className="manager-grid">
+      <div className={styles.managerGrid}>
         {dashboards.map(({ store, dashboard }) => (
-          <div className="manager-card" key={store._id}>
+          <div className={styles.managerCard} key={store._id}>
             <h2>{store.name}</h2>
 
-            <div className="store-score">
+            <div className={styles.storeScore}>
               Score: <span>{dashboard.storeScore}</span>
             </div>
 
-            <div className="kpi-section">
+            <div className={styles.kpiSection}>
               {Object.entries(dashboard.kpiTrendCharts).map(([key, kpi]) => (
-                <div className="kpi-row" key={key}>
-                  <span className="kpi-label">{kpi.label}</span>
+                <div className={styles.kpiRow} key={key}>
+                  <span className={styles.kpiLabel}>{kpi.label}</span>
 
                   <span className={`kpi-arrow ${kpi.direction}`}>
                     {kpi.direction === "up" && "▲"}
@@ -56,29 +56,29 @@ export default function ManagerDashboard() {
                     {kpi.direction === "flat" && "■"}
                   </span>
 
-                  <span className="kpi-strength">{kpi.strength}</span>
+                  <span className={styles.kpiStrength}>{kpi.strength}</span>
                 </div>
               ))}
             </div>
 
-            <div className="manager-actions">
+            <div className={styles.managerActions}>
               <button
                 onClick={() => navigate(`/dashboard?store=${store._id}`)}
-                className="action-button"
+                className={styles.actionButton}
               >
                 View Store Dashboard
               </button>
 
               <button
                 onClick={() => navigate(`/count-history?store=${store._id}`)}
-                className="action-button"
+                className={styles.actionButton}
               >
                 Count History
               </button>
 
               <button
                 onClick={() => navigate(`/reports?store=${store._id}`)}
-                className="action-button"
+                className={styles.actionButton}
               >
                 Reports
               </button>

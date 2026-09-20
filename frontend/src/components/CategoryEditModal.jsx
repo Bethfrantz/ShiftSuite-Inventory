@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./CategoryModal.css";
+import styles from "../styles/modals/CategoryModal.module.css";
 
 export default function CategoryEditModal({ category, onClose, onSave }) {
   const [form, setForm] = useState({

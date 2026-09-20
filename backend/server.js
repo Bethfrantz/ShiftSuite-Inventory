@@ -85,6 +85,12 @@ const errorHandler = require("./middleware/errorHandler");
 app.use(errorHandler);
 
 /* -------------------------------------------------------
+   store routes
+------------------------------------------------------- */
+const storeRoutes = require("./routes/storeRoutes");
+app.use("/api/stores", storeRoutes);
+
+/* -------------------------------------------------------
    DATABASE CONNECTION
 ------------------------------------------------------- */
 mongoose

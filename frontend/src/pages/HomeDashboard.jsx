@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
-import "./HomeDashboard.css";
+import styles from "../styles/pages/HomeDashboard.module.css";
 
 export default function HomeDashboard() {
   const [stores, setStores] = useState([]);
@@ -33,32 +33,30 @@ export default function HomeDashboard() {
   }, []);
 
   return (
-    <div className="home-page">
+    <div className={styles.homePage}>
       <h1>Enterprise Home Dashboard</h1>
 
-      {/* Top KPIs */}
-      <div className="home-kpi-grid">
-        <div className="home-kpi-card">
+      <div className={styles.homeKpiGrid}>
+        <div className={styles.homeKpiCard}>
           <h3>Stores</h3>
-          <p className="home-kpi-value">{stores.length}</p>
+          <p className={styles.homeKpiValue}>{stores.length}</p>
         </div>
 
-        <div className="home-kpi-card">
+        <div className={styles.homeKpiCard}>
           <h3>Items</h3>
-          <p className="home-kpi-value">{items.length}</p>
+          <p className={styles.homeKpiValue}>{items.length}</p>
         </div>
 
-        <div className="home-kpi-card">
+        <div className={styles.homeKpiCard}>
           <h3>Categories</h3>
-          <p className="home-kpi-value">{categories.length}</p>
+          <p className={styles.homeKpiValue}>{categories.length}</p>
         </div>
       </div>
 
-      {/* Navigation tiles */}
-      <div className="home-nav-grid">
+      <div className={styles.homeNavGrid}>
         <button
           onClick={() => navigate("/dashboard")}
-          className="home-nav-card"
+          className={styles.homeNavCard}
         >
           <h3>Store Dashboard</h3>
           <p>View KPIs and trends for a single store.</p>
@@ -66,7 +64,7 @@ export default function HomeDashboard() {
 
         <button
           onClick={() => navigate("/manager-dashboard")}
-          className="home-nav-card"
+          className={styles.homeNavCard}
         >
           <h3>Manager Dashboard</h3>
           <p>Multi‑store KPI overview for managers.</p>
@@ -74,61 +72,72 @@ export default function HomeDashboard() {
 
         <button
           onClick={() => navigate("/district-comparison")}
-          className="home-nav-card"
+          className={styles.homeNavCard}
         >
           <h3>District Comparison</h3>
           <p>Compare districts side‑by‑side.</p>
         </button>
 
-        <button onClick={() => navigate("/reports")} className="home-nav-card">
+        <button
+          onClick={() => navigate("/reports")}
+          className={styles.homeNavCard}
+        >
           <h3>Reports</h3>
           <p>Inventory, waste, vendor, and usage reports.</p>
         </button>
 
-        <button onClick={() => navigate("/waste")} className="home-nav-card">
+        <button
+          onClick={() => navigate("/waste")}
+          className={styles.homeNavCard}
+        >
           <h3>Waste Tracking</h3>
           <p>Record and review daily waste.</p>
         </button>
 
         <button
           onClick={() => navigate("/waste-cost")}
-          className="home-nav-card"
+          className={styles.homeNavCard}
         >
           <h3>Waste Cost Analysis</h3>
           <p>See financial impact of waste.</p>
         </button>
 
-        <button onClick={() => navigate("/alerts")} className="home-nav-card">
+        <button
+          onClick={() => navigate("/alerts")}
+          className={styles.homeNavCard}
+        >
           <h3>Store Alerts</h3>
           <p>Operational alerts and recommended actions.</p>
         </button>
 
         <button
           onClick={() => navigate("/count-history")}
-          className="home-nav-card"
+          className={styles.homeNavCard}
         >
           <h3>Count History</h3>
           <p>Audit trail of inventory counts.</p>
         </button>
       </div>
 
-      {/* Latest alerts preview */}
-      <div className="home-alerts-section">
+      <div className={styles.homeAlertsSection}>
         <h2>Latest Alerts (first store)</h2>
 
         {alerts.length === 0 && <p>No alerts.</p>}
 
-        <div className="home-alerts-list">
+        <div className={styles.homeAlertsList}>
           {alerts.map((a, idx) => (
-            <div className={`home-alert-card severity-${a.severity}`} key={idx}>
-              <div className="home-alert-header">
-                <span className="home-alert-type">{a.type}</span>
-                <span className="home-alert-severity">
+            <div
+              className={`${styles.homeAlertCard} ${styles[`severity-${a.severity}`]}`}
+              key={idx}
+            >
+              <div className={styles.homeAlertHeader}>
+                <span className={styles.homeAlertType}>{a.type}</span>
+                <span className={styles.homeAlertSeverity}>
                   {a.severity.toUpperCase()}
                 </span>
               </div>
               <p>{a.message}</p>
-              <p className="home-alert-time">
+              <p className={styles.homeAlertTime}>
                 {new Date(a.timestamp).toLocaleString()}
               </p>
             </div>

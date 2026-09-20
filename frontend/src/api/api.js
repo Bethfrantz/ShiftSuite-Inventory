@@ -1,82 +1,69 @@
+const normalize = async (res) => {
+  const data = await res.json();
+
+  // Always return a predictable shape:
+  // { ok: boolean, data: any, error: string|null }
+  if (!res.ok) {
+    return {
+      ok: false,
+      data: null,
+      error: data?.message || "Unknown API error",
+    };
+  }
+
+  return {
+    ok: true,
+    data,
+    error: null,
+  };
+};
+
 const API = {
+  /* ---------------- ITEMS ---------------- */
   getItems: async () => {
     const res = await fetch("/api/items");
-    return res.json();
+    const { data } = await normalize(res);
+    return data.items || []; // ALWAYS an array
   },
 
-  getInventoryItems: async (storeId) => {
-    const res = await fetch(`/api/inventory/items/${storeId}`);
-    return res.json();
-  },
-
-  submitCounts: async (storeId, counts) => {
-    const res = await fetch(`/api/inventory/counts/${storeId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ counts }),
-    });
-    return res.json();
+  getItem: async (itemId) => {
+    const res = await fetch(`/api/items/${itemId}`);
+    const { data } = await normalize(res);
+    return data.item || null;
   },
 
   lookupBarcode: async (code) => {
     const res = await fetch(`/api/items/barcode/${code}`);
-    return res.json();
+    const { data } = await normalize(res);
+    return data.item || null;
   },
-  updateItem: async (itemId, data) => {
-    const res = await fetch(`/api/items/${itemId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-  createItem: async (data) => {
+
+  createItem: async (payload) => {
     const res = await fetch("/api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
-    return res.json();
+    const { data } = await normalize(res);
+    return data.item;
   },
-  deleteItem: async (itemId) => {
+
+  updateItem: async (itemId, payload) => {
     const res = await fetch(`/api/items/${itemId}`, {
-      method: "DELETE",
-    });
-    return res.json();
-  },
-  getCategories: async () => {
-    const res = await fetch("/api/categories");
-    return res.json();
-  },
-
-  createCategory: async (data) => {
-    const res = await fetch("/api/categories", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return res.json();
-  },
-
-  updateCategory: async (id, data) => {
-    const res = await fetch(`/api/categories/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
-    return res.json();
+    const { data } = await normalize(res);
+    return data.item;
   },
 
-  deleteCategory: async (id) => {
-    const res = await fetch(`/api/categories/${id}`, {
-      method: "DELETE",
-    });
-    return res.json();
+  deleteItem: async (itemId) => {
+    const res = await fetch(`/api/items/${itemId}`, { method: "DELETE" });
+    const { data } = await normalize(res);
+    return data.message;
   },
-  getItem: async (itemId) => {
-    const res = await fetch(`/api/items/${itemId}`);
-    return res.json();
-  },
+
   uploadCSV: async (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -86,57 +73,137 @@ const API = {
       body: formData,
     });
 
-    return res.json();
+    const { data } = await normalize(res);
+    return data;
   },
-  getReport: async (type, start, end) => {
-    const res = await fetch(`/api/reports/${type}?start=${start}&end=${end}`);
-    return res.json();
+
+  /* ---------------- CATEGORIES ---------------- */
+  getCategories: async () => {
+    const res = await fetch("/api/categories");
+    const { data } = await normalize(res);
+    return data.categories || [];
   },
+
+  createCategory: async (payload) => {
+    const res = await fetch("/api/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const { data } = await normalize(res);
+    return data.category;
+  },
+
+  updateCategory: async (id, payload) => {
+    const res = await fetch(`/api/categories/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const { data } = await normalize(res);
+    return data.category;
+  },
+
+  deleteCategory: async (id) => {
+    const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
+    const { data } = await normalize(res);
+    return data.message;
+  },
+
+  /* ---------------- STORES ---------------- */
+  getStores: async () => {
+    const res = await fetch("/api/stores");
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !data.stores) {
+      return []; // ALWAYS return an array
+    }
+
+    return data.stores;
+  },
+
+  getStoreDashboard: async (storeId) => {
+    const res = await fetch(`/api/storeDashboard/${storeId}`);
+    const { data } = await normalize(res);
+    return data; // dashboard object
+  },
+
+  /* ---------------- ALERTS ---------------- */
+  getAlerts: async (storeId) => {
+    const res = await fetch(`/api/alerts/${storeId}`);
+    const { data } = await normalize(res);
+    return data.alerts || [];
+  },
+
+  /* ---------------- INVENTORY ---------------- */
+  getInventoryItems: async (storeId) => {
+    const res = await fetch(`/api/inventory/items/${storeId}`);
+    const { data } = await normalize(res);
+    return data.items || [];
+  },
+
+  submitCounts: async (storeId, counts) => {
+    const res = await fetch(`/api/inventory/counts/${storeId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ counts }),
+    });
+    const { data } = await normalize(res);
+    return data;
+  },
+
   getCountHistory: async (storeId, itemId, start, end) => {
     const res = await fetch(
       `/api/inventoryCounts/history/${storeId}/${itemId}?start=${start}&end=${end}`,
     );
-    return res.json();
+    const { data } = await normalize(res);
+    return data.history || [];
   },
-  getStoreDashboard: async (storeId) => {
-    const res = await fetch(`/api/storeDashboard/${storeId}`);
-    return res.json();
+
+  /* ---------------- REPORTS ---------------- */
+  getReport: async (type, start, end) => {
+    const res = await fetch(`/api/reports/${type}?start=${start}&end=${end}`);
+    const { data } = await normalize(res);
+    return data.report || null;
   },
-  getStoreDashboard: async (storeId) => {
-    const res = await fetch(`/api/storeDashboard/${storeId}`);
-    return res.json();
-  },
-  submitWaste: async (data) => {
+
+  /* ---------------- WASTE ---------------- */
+  submitWaste: async (payload) => {
     const res = await fetch("/api/waste", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
-    return res.json();
+    const { data } = await normalize(res);
+    return data;
   },
 
   getWasteHistory: async (storeId) => {
     const res = await fetch(`/api/waste/history/${storeId}`);
-    return res.json();
+    const { data } = await normalize(res);
+    return data.history || [];
   },
 
-  getFinishedProducts: async () => {
-    const res = await fetch("/api/finishedProducts");
-    return res.json();
-  },
-  getDistrictComparison: async () => {
-    const res = await fetch("/api/districtComparison");
-    return res.json();
-  },
-  getAlerts: async (storeId) => {
-    const res = await fetch(`/api/alerts/${storeId}`);
-    return res.json();
-  },
   getWasteCost: async (storeId, start, end) => {
     const res = await fetch(
       `/api/wasteCost/${storeId}?startDate=${start}&endDate=${end}`,
     );
-    return res.json();
+    const { data } = await normalize(res);
+    return data.cost || null;
+  },
+
+  /* ---------------- FINISHED PRODUCTS ---------------- */
+  getFinishedProducts: async () => {
+    const res = await fetch("/api/finishedProducts");
+    const { data } = await normalize(res);
+    return data.products || [];
+  },
+
+  /* ---------------- DISTRICT COMPARISON ---------------- */
+  getDistrictComparison: async () => {
+    const res = await fetch("/api/districtComparison");
+    const { data } = await normalize(res);
+    return data.districts || [];
   },
 };
 

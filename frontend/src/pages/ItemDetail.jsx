@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/api";
-import "./ItemDetail.css";
+import styles from "../styles/pages/ItemDetail.module.css";
 
 export default function ItemDetail() {
   const { itemId } = useParams();
@@ -21,37 +21,43 @@ export default function ItemDetail() {
   if (!item) return <div>Loading...</div>;
 
   return (
-    <div className="item-detail-page">
-      <button className="back-button" onClick={() => navigate("/items")}>
+    <div className={styles.itemDetailPage}>
+      <button className={styles.backButton} onClick={() => navigate("/items")}>
         ← Back to Items
       </button>
 
-      <div className="item-detail-card">
-        <div className="item-detail-left">
+      <div className={styles.itemDetailCard}>
+        <div className={styles.itemDetailLeft}>
           {item.photoUrl ? (
             <img
               src={item.photoUrl}
               alt={item.name}
-              className="item-detail-photo"
+              className={styles.itemDetailPhoto}
             />
           ) : (
-            <div className="item-detail-photo placeholder">No Photo</div>
+            <div className={styles.itemDetailPhoto + " " + styles.placeholder}>
+              No Photo
+            </div>
           )}
 
           {item.categoryPhotoUrl ? (
             <img
               src={item.categoryPhotoUrl}
               alt="Category"
-              className="item-detail-category-photo"
+              className={styles.itemDetailCategoryPhoto}
             />
           ) : (
-            <div className="item-detail-category-photo placeholder">
+            <div
+              className={
+                styles.itemDetailCategoryPhoto + " " + styles.placeholder
+              }
+            >
               No Category Photo
             </div>
           )}
         </div>
 
-        <div className="item-detail-right">
+        <div className={styles.itemDetailRight}>
           <h1>{item.name}</h1>
           <p>
             <strong>Vendor:</strong> {item.vendor}
@@ -69,16 +75,16 @@ export default function ItemDetail() {
             <strong>Description:</strong> {item.description || "No description"}
           </p>
 
-          <div className="item-detail-actions">
+          <div className={styles.itemDetailActions}>
             <button
-              className="edit-button"
+              className={styles.editButton}
               onClick={() => navigate(`/items/edit/${item.itemId}`)}
             >
               Edit Item
             </button>
 
             <button
-              className="delete-button"
+              className={styles.deleteButton}
               onClick={() => navigate(`/items/delete/${item.itemId}`)}
             >
               Delete Item

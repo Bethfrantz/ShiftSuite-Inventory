@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./CountHistory.css";
+import styles from "../styles/pages/CountHistory.module.css";
 
 export default function CountHistory() {
   const [stores, setStores] = useState([]);
@@ -30,17 +30,17 @@ export default function CountHistory() {
     const data = await API.getCountHistory(storeId, itemId, startDate, endDate);
     setHistory(data);
   }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadStores();
     loadItems();
   }, []);
 
   return (
-    <div className="count-history-page">
+    <div className={styles.countHistoryPage}>
       <h1>Inventory Count History</h1>
 
-      <div className="history-controls">
+      <div className={styles.historyControls}>
         <select value={storeId} onChange={(e) => setStoreId(e.target.value)}>
           <option value="">Select Store</option>
           {stores.map((s) => (
@@ -71,13 +71,13 @@ export default function CountHistory() {
           onChange={(e) => setEndDate(e.target.value)}
         />
 
-        <button className="generate-button" onClick={loadHistory}>
+        <button className={styles.generateButton} onClick={loadHistory}>
           Load History
         </button>
 
         {history.length > 0 && (
           <button
-            className="print-button"
+            className={styles.printButton}
             onClick={() =>
               window.open(
                 `/print/count-history/${storeId}/${itemId}?start=${startDate}&end=${endDate}`,
@@ -90,11 +90,11 @@ export default function CountHistory() {
         )}
       </div>
 
-      <div className="history-table-wrapper">
+      <div className={styles.historyTableWrapper}>
         {history.length === 0 && <p>No history loaded.</p>}
 
         {history.length > 0 && (
-          <table className="history-table">
+          <table className={styles.historyTable}>
             <thead>
               <tr>
                 <th>Item</th>
@@ -116,7 +116,7 @@ export default function CountHistory() {
                   <td>
                     <img
                       src={h.categoryPhotoUrl}
-                      className="history-photo-small"
+                      className={styles.historyPhotoSmall}
                     />
                   </td>
 

@@ -1,0 +1,135 @@
+/* PAGE WRAPPER */
+.item-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-32);
+  color: var(--color-text);
+  font-family: sans-serif;
+}
+
+/* BACK BUTTON */
+.back-button {
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
+  padding: var(--space-12) var(--space-20);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-bottom: var(--space-32);
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.back-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* MAIN CARD */
+.item-detail-card {
+  display: flex;
+  gap: var(--space-32);
+  background: var(--color-background);
+  border: 3px solid var(--elmos-red);
+  border-radius: var(--radius-lg);
+  padding: var(--space-32);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* LEFT SIDE */
+.item-detail-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+  align-items: center;
+}
+
+/* MAIN PHOTO */
+.item-detail-photo {
+  width: 320px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* CATEGORY PHOTO */
+.item-detail-category-photo {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* PLACEHOLDER */
+.placeholder {
+  background: var(--elmos-yellow);
+  color: var(--elmos-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+/* RIGHT SIDE */
+.item-detail-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.item-detail-right h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: var(--space-12);
+}
+
+.item-detail-right p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* ACTIONS */
+.item-detail-actions {
+  margin-top: var(--space-32);
+  display: flex;
+  gap: var(--space-20);
+}
+
+.edit-button,
+.delete-button {
+  padding: var(--space-12) var(--space-20);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* EDIT BUTTON */
+.edit-button {
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
+}
+
+.edit-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* DELETE BUTTON */
+.delete-button {
+  background: var(--elmos-red);
+  color: var(--elmos-gray);
+  border: none;
+}
+
+.delete-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}

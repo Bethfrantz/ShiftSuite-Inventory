@@ -1,6 +1,6 @@
 import { useState } from "react";
 import API from "../api/api";
-import "./Reports.css";
+import styles from "../styles/pages/Reports.module.css";
 
 export default function Reports() {
   const [reportType, setReportType] = useState("");
@@ -16,10 +16,10 @@ export default function Reports() {
   }
 
   return (
-    <div className="reports-page">
+    <div className={styles.reportsPage}>
       <h1>Reports</h1>
 
-      <div className="reports-controls">
+      <div className={styles.reportsControls}>
         <select
           value={reportType}
           onChange={(e) => setReportType(e.target.value)}
@@ -44,13 +44,13 @@ export default function Reports() {
           onChange={(e) => setEndDate(e.target.value)}
         />
 
-        <button className="generate-button" onClick={generateReport}>
+        <button className={styles.generateButton} onClick={generateReport}>
           Generate
         </button>
 
         {reportData && (
           <button
-            className="print-button"
+            className={styles.printButton}
             onClick={() =>
               window.open(
                 `/print/report/${reportType}?start=${startDate}&end=${endDate}`,
@@ -63,15 +63,15 @@ export default function Reports() {
         )}
       </div>
 
-      <div className="report-viewer">
+      <div className={styles.reportViewer}>
         {!reportData && <p>Select a report and date range.</p>}
 
         {reportData && (
-          <div className="report-card">
+          <div className={styles.reportCard}>
             <h2>{reportData.title}</h2>
 
             {reportData.table && (
-              <table className="report-table">
+              <table className={styles.reportTable}>
                 <thead>
                   <tr>
                     {reportData.table.headers.map((h) => (
@@ -92,7 +92,7 @@ export default function Reports() {
             )}
 
             {reportData.summary && (
-              <div className="report-summary">
+              <div className={styles.reportSummary}>
                 <h3>Summary</h3>
                 <p>{reportData.summary}</p>
               </div>

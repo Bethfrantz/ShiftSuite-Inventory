@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./Inventory.css";
+import styles from "../styles/pages/Inventory.module.css";
 
 export default function Inventory() {
   const [storeId, setStoreId] = useState("");
@@ -70,10 +70,10 @@ export default function Inventory() {
   }
 
   return (
-    <div className="inventory-page">
+    <div className={styles.inventoryPage}>
       <h1>Inventory</h1>
 
-      <div className="inventory-controls">
+      <div className={styles.inventoryControls}>
         {/* Store Selector */}
         <select onChange={(e) => setStoreId(e.target.value)}>
           <option value="">Select Store</option>
@@ -140,14 +140,14 @@ export default function Inventory() {
 
         {/* Print Buttons */}
         <button
-          className="print-button"
+          className={styles.printButton}
           onClick={() => window.open(`/print/inventory/${storeId}`, "_blank")}
         >
           Print Inventory
         </button>
 
         <button
-          className="print-button"
+          className={styles.printButton}
           onClick={() =>
             window.open(`/print/inventory-barcodes/${storeId}`, "_blank")
           }
@@ -156,20 +156,26 @@ export default function Inventory() {
         </button>
       </div>
 
-      <div className="inventory-grid">
+      <div className={styles.inventoryGrid}>
         {filteredItems.map((item) => (
           <div
-            className="item-card"
+            className={styles.itemCard}
             id={`item-${item.itemId}`}
             key={item.itemId}
           >
             {item.photoUrl ? (
-              <img src={item.photoUrl} alt={item.name} className="item-photo" />
+              <img
+                src={item.photoUrl}
+                alt={item.name}
+                className={styles.itemPhoto}
+              />
             ) : (
-              <div className="item-photo placeholder">No Photo</div>
+              <div className={styles.itemPhoto + " " + styles.placeholder}>
+                No Photo
+              </div>
             )}
 
-            <div className="item-info">
+            <div className={styles.itemInfo}>
               <h3>{item.name}</h3>
               <p>{item.vendor}</p>
 
@@ -177,10 +183,12 @@ export default function Inventory() {
                 <img
                   src={item.categoryPhotoUrl}
                   alt="Category"
-                  className="category-photo"
+                  className={styles.categoryPhoto}
                 />
               ) : (
-                <div className="category-photo placeholder">
+                <div
+                  className={styles.categoryPhoto + " " + styles.placeholder}
+                >
                   No Category Photo
                 </div>
               )}
@@ -197,7 +205,7 @@ export default function Inventory() {
         ))}
       </div>
 
-      <button className="save-button" onClick={handleSave}>
+      <button className={styles.saveButton} onClick={handleSave}>
         Save Counts
       </button>
     </div>

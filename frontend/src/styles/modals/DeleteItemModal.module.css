@@ -1,0 +1,89 @@
+/* OVERLAY */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+/* DELETE BOX */
+.deleteBox {
+  background: var(--color-background);
+  padding: var(--space-32);
+  border-radius: var(--radius-lg);
+  width: 420px;
+  max-width: 95%;
+  border: 3px solid var(--elmos-red);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  animation: modal-pop 0.2s ease-out;
+}
+
+/* HEADER */
+.deleteBox h2 {
+  color: var(--elmos-red);
+  margin-bottom: var(--space-20);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ACTIONS */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-16);
+  margin-top: var(--space-32);
+}
+
+/* DELETE BUTTON */
+.modalDelete {
+  background: var(--elmos-red);
+  color: var(--elmos-gray);
+  padding: var(--space-12) var(--space-20);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.modalDelete:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* CANCEL BUTTON */
+.modalCancel {
+  background: var(--elmos-yellow);
+  color: var(--elmos-black);
+  padding: var(--space-12) var(--space-20);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.modalCancel:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* ANIMATION */
+@keyframes modal-pop {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

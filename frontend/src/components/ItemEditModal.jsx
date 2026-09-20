@@ -1,4 +1,5 @@
-import "./ItemEditModal.css";
+import styles from "../styles/modals/ItemEditModal.module.css";
+import { useState } from "react";
 
 export default function ItemEditModal({ item, onClose, onSave }) {
   const [form, setForm] = useState({

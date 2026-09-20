@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./Categories.css";
+import styles from "../styles/pages/Categories.module.css";
 import CategoryEditModal from "../components/CategoryEditModal";
 import AddCategoryModal from "../components/AddCategoryModal";
 import DeleteCategoryModal from "../components/DeleteCategoryModal";
@@ -19,7 +19,7 @@ export default function Categories() {
     const data = await API.getCategories();
     setCategories(data);
   }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadCategories();
   }, []);
@@ -29,45 +29,47 @@ export default function Categories() {
   );
 
   return (
-    <div className="categories-page">
+    <div className={styles.categoriesPage}>
       <h1>Categories</h1>
 
-      <div className="categories-controls">
+      <div className={styles.categoriesControls}>
         <input
           type="text"
           placeholder="Search categories..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
+          className={styles.searchInput}
         />
 
         <button
-          className="add-category-button"
+          className={styles.addCategoryButton}
           onClick={() => setShowAddModal(true)}
         >
           + Add Category
         </button>
       </div>
 
-      <div className="categories-grid">
+      <div className={styles.categoriesGrid}>
         {filteredCategories.map((cat) => (
-          <div className="category-card" key={cat._id}>
+          <div className={styles.categoryCard} key={cat._id}>
             {cat.photoUrl ? (
               <img
                 src={cat.photoUrl}
                 alt={cat.name}
-                className="category-photo"
+                className={styles.categoryPhoto}
               />
             ) : (
-              <div className="category-photo placeholder">No Photo</div>
+              <div className={styles.categoryPhoto + " " + styles.placeholder}>
+                No Photo
+              </div>
             )}
 
             <h3>{cat.name}</h3>
             <p>{cat.description || "No description"}</p>
 
-            <div className="category-actions">
+            <div className={styles.categoryActions}>
               <button
-                className="edit-category-button"
+                className={styles.editCategoryButton}
                 onClick={() => {
                   setSelectedCategory(cat);
                   setShowEditModal(true);
@@ -77,7 +79,7 @@ export default function Categories() {
               </button>
 
               <button
-                className="delete-category-button"
+                className={styles.deleteCategoryButton}
                 onClick={() => {
                   setSelectedCategory(cat);
                   setShowDeleteModal(true);

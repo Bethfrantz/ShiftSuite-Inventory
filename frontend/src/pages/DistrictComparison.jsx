@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./DistrictComparison.css";
+import styles from "../styles/pages/DistrictComparison.module.css";
 import { useNavigate } from "react-router-dom";
 
 export default function DistrictComparison() {
@@ -13,7 +13,7 @@ export default function DistrictComparison() {
     setComparison(data);
     setDistricts(data.districts);
   }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadComparison();
   }, []);
@@ -21,15 +21,15 @@ export default function DistrictComparison() {
   if (!comparison) return <div>Loading...</div>;
 
   return (
-    <div className="district-page">
+    <div className={styles.districtPage}>
       <h1>District Comparison Dashboard</h1>
 
       {/* Executive Summary */}
-      <div className="executive-summary">
+      <div className={styles.executiveSummary}>
         <h2>Executive Summary</h2>
 
-        <div className="summary-grid">
-          <div className="summary-card">
+        <div className={styles.summaryGrid}>
+          <div className={styles.summaryCard}>
             <h3>Best District</h3>
             <p>
               {
@@ -39,7 +39,7 @@ export default function DistrictComparison() {
             </p>
           </div>
 
-          <div className="summary-card">
+          <div className={styles.summaryCard}>
             <h3>Highest Risk</h3>
             <p>
               {
@@ -49,7 +49,7 @@ export default function DistrictComparison() {
             </p>
           </div>
 
-          <div className="summary-card">
+          <div className={styles.summaryCard}>
             <h3>Strongest Forecast</h3>
             <p>
               {
@@ -59,7 +59,7 @@ export default function DistrictComparison() {
             </p>
           </div>
 
-          <div className="summary-card">
+          <div className={styles.summaryCard}>
             <h3>Most Volatile</h3>
             <p>
               {
@@ -69,7 +69,7 @@ export default function DistrictComparison() {
             </p>
           </div>
 
-          <div className="summary-card">
+          <div className={styles.summaryCard}>
             <h3>Highest Anomalies</h3>
             <p>
               {
@@ -79,7 +79,7 @@ export default function DistrictComparison() {
             </p>
           </div>
 
-          <div className="summary-card">
+          <div className={styles.summaryCard}>
             <h3>Highest Predictive Risk</h3>
             <p>
               {
@@ -92,11 +92,11 @@ export default function DistrictComparison() {
       </div>
 
       {/* Ranking Tables */}
-      <div className="ranking-section">
+      <div className={styles.rankingSection}>
         <h2>District Rankings</h2>
 
-        <div className="ranking-grid">
-          <div className="ranking-card">
+        <div className={styles.rankingGrid}>
+          <div className={styles.rankingCard}>
             <h3>Score Ranking</h3>
             <table>
               <tbody>
@@ -111,7 +111,7 @@ export default function DistrictComparison() {
             </table>
           </div>
 
-          <div className="ranking-card">
+          <div className={styles.rankingCard}>
             <h3>Operational Risk</h3>
             <table>
               <tbody>
@@ -126,7 +126,7 @@ export default function DistrictComparison() {
             </table>
           </div>
 
-          <div className="ranking-card">
+          <div className={styles.rankingCard}>
             <h3>Forecast</h3>
             <table>
               <tbody>
@@ -141,7 +141,7 @@ export default function DistrictComparison() {
             </table>
           </div>
 
-          <div className="ranking-card">
+          <div className={styles.rankingCard}>
             <h3>Anomalies</h3>
             <table>
               <tbody>
@@ -156,7 +156,7 @@ export default function DistrictComparison() {
             </table>
           </div>
 
-          <div className="ranking-card">
+          <div className={styles.rankingCard}>
             <h3>Volatility</h3>
             <table>
               <tbody>
@@ -171,7 +171,7 @@ export default function DistrictComparison() {
             </table>
           </div>
 
-          <div className="ranking-card">
+          <div className={styles.rankingCard}>
             <h3>Predictive Risk</h3>
             <table>
               <tbody>
@@ -189,13 +189,13 @@ export default function DistrictComparison() {
       </div>
 
       {/* KPI Comparison Grid */}
-      <div className="kpi-section">
+      <div className={styles.kpiSection}>
         <h2>KPI Comparison Across Districts</h2>
 
-        <div className="kpi-grid">
+        <div className={styles.kpiGrid}>
           {Object.entries(comparison.districtKpiComparison).map(
             ([key, kpi]) => (
-              <div className="kpi-card" key={key}>
+              <div className={styles.kpiCard} key={key}>
                 <h3>{kpi.label}</h3>
 
                 <table>
@@ -224,14 +224,14 @@ export default function DistrictComparison() {
       </div>
 
       {/* Quick Actions */}
-      <div className="quick-actions">
+      <div className={styles.quickActions}>
         <h2>Quick Actions</h2>
 
-        <div className="quick-grid">
+        <div className={styles.quickGrid}>
           {districts.map((d) => (
             <button
               key={d.districtId}
-              className="quick-button"
+              className={styles.quickButton}
               onClick={() => navigate(`/dashboard?district=${d.districtId}`)}
             >
               View {d.districtName} Dashboard

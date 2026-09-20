@@ -1,0 +1,114 @@
+/* PAGE WRAPPER */
+.countHistoryPage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-32);
+  color: var(--color-text);
+  font-family: sans-serif;
+}
+
+/* PAGE TITLE */
+.countHistoryPage h1 {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: var(--space-24);
+}
+
+/* CONTROLS */
+.historyControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-16);
+  margin-bottom: var(--space-32);
+}
+
+.historyControls select,
+.historyControls input[type="date"] {
+  padding: var(--space-12);
+  border: 2px solid var(--elmos-yellow);
+  border-radius: var(--radius-md);
+  background: var(--color-background);
+  font-size: 16px;
+}
+
+/* BUTTONS */
+.generateButton,
+.printButton {
+  padding: var(--space-12) var(--space-20);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.generateButton {
+  background: var(--elmos-green);
+  color: var(--elmos-gray);
+  border: none;
+}
+
+.printButton {
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
+}
+
+.generateButton:hover,
+.printButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* TABLE WRAPPER */
+.historyTableWrapper {
+  margin-top: var(--space-24);
+  background: var(--color-background);
+  padding: var(--space-20);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* TABLE */
+.historyTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.historyTable th {
+  background: var(--elmos-yellow);
+  color: var(--elmos-black);
+  padding: var(--space-12);
+  border: 1px solid var(--elmos-red);
+  font-weight: 600;
+  text-align: left;
+}
+
+.historyTable td {
+  border: 1px solid var(--elmos-yellow);
+  padding: var(--space-12);
+  vertical-align: middle;
+}
+
+/* ROW HOVER */
+.historyTable tbody tr:hover {
+  background: rgba(255, 230, 150, 0.25);
+}
+
+/* PHOTOS */
+.historyPhoto {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  margin-right: var(--space-8);
+  border-radius: var(--radius-sm);
+}
+
+.historyPhotoSmall {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}

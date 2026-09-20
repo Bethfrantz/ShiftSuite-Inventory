@@ -660,10 +660,11 @@ router.get("/:storeId", async (req, res, next) => {
     // -----------------------------
 
     // Waste anomaly
-    const waste7 = kpiHistory.wasteRate?.["7d"] ?? 0;
-    const waste14 = kpiHistory.wasteRate?.["14d"] ?? 0;
-    const waste30 = kpiHistory.wasteRate?.["30d"] ?? 0;
-    const wasteAvg = (waste7 + waste14 + waste30) / 3;
+    const waste7Score = kpiHistory.wasteRate?.["7d"] ?? 0;
+    const waste14Score = kpiHistory.wasteRate?.["14d"] ?? 0;
+    const waste30Score = kpiHistory.wasteRate?.["30d"] ?? 0;
+
+    const wasteAvgScore = (waste7Score + waste14Score + waste30Score) / 3;
 
     if (isDeviation(waste7, wasteAvg)) {
       kpiAnomalies.push({

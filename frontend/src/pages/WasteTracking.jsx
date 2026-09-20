@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./WasteTracking.css";
+import styles from "../styles/pages/WasteTracking.module.css";
 
 export default function WasteTracking() {
   const [stores, setStores] = useState([]);
@@ -45,7 +45,7 @@ export default function WasteTracking() {
     await API.submitWaste(payload);
     loadHistory();
   }
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadStores();
     loadItems();
@@ -57,10 +57,10 @@ export default function WasteTracking() {
   }, [storeId]);
 
   return (
-    <div className="waste-page">
+    <div className={styles.wastePage}>
       <h1>Waste Tracking</h1>
 
-      <div className="waste-controls">
+      <div className={styles.wasteControls}>
         {/* Store Selector */}
         <select value={storeId} onChange={(e) => setStoreId(e.target.value)}>
           <option value="">Select Store</option>
@@ -118,13 +118,13 @@ export default function WasteTracking() {
           <option value="other">Other</option>
         </select>
 
-        <button className="submit-button" onClick={submitWaste}>
+        <button className={styles.submitButton} onClick={submitWaste}>
           Submit Waste
         </button>
 
         {history.length > 0 && (
           <button
-            className="print-button"
+            className={styles.printButton}
             onClick={() => window.open(`/print/waste/${storeId}`, "_blank")}
           >
             Print Waste Report
@@ -132,13 +132,13 @@ export default function WasteTracking() {
         )}
       </div>
 
-      <div className="waste-history">
+      <div className={styles.wasteHistory}>
         <h2>Waste History</h2>
 
         {history.length === 0 && <p>No waste recorded.</p>}
 
         {history.length > 0 && (
-          <table className="waste-table">
+          <table className={styles.wasteTable}>
             <thead>
               <tr>
                 <th>Type</th>

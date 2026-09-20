@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
-import "./Items.css";
+import styles from "../styles/pages/Items.module.css";
+import { useNavigate } from "react-router-dom";
+
+import ItemEditModal from "../components/ItemEditModal";
+import AddItemModal from "../components/AddItemModal";
+import DeleteItemModal from "../components/DeleteItemModal";
+import BulkImportModal from "../components/BulkImportModal";
 
 export default function Items() {
   const [items, setItems] = useState([]);
@@ -13,10 +19,11 @@ export default function Items() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const navigate = useNavigate();
 
   async function loadItems() {
     const data = await API.getItems();
-    setItems(data);
+    setItems(data.items);
   }
 
   useEffect(() => {
@@ -38,21 +45,22 @@ export default function Items() {
   });
 
   return (
-    <div className="items-page">
+    <div className={styles.itemsPage}>
       <h1>Items</h1>
 
-      <div className="items-controls">
+      <div className={styles.itemsControls}>
         <input
           type="text"
           placeholder="Search items..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
+          className={styles.searchInput}
         />
 
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
+          className={styles.categoryFilter}
         >
           <option value="">All Categories</option>
           {[...new Set(items.map((i) => i.categoryPhotoUrl))].map(
@@ -77,29 +85,35 @@ export default function Items() {
         </select>
 
         <button
-          className="add-item-button"
+          className={styles.addItemButton}
           onClick={() => setShowAddModal(true)}
         >
           + Add Item
         </button>
         <button
-          className="bulk-import-button"
+          className={styles.bulkImportButton}
           onClick={() => setShowBulkModal(true)}
         >
           Import CSV
         </button>
       </div>
 
-      <div className="items-grid">
+      <div className={styles.itemsGrid}>
         {filteredItems.map((item) => (
-          <div className="item-card" key={item.itemId}>
+          <div className={styles.itemCard} key={item.itemId}>
             {item.photoUrl ? (
-              <img src={item.photoUrl} alt={item.name} className="item-photo" />
+              <img
+                src={item.photoUrl}
+                alt={item.name}
+                className={styles.itemPhoto}
+              />
             ) : (
-              <div className="item-photo placeholder">No Photo</div>
+              <div className={styles.itemPhoto + " " + styles.placeholder}>
+                No Photo
+              </div>
             )}
 
-            <div className="item-info">
+            <div className={styles.itemInfo}>
               <h3>{item.name}</h3>
               <p>{item.vendor}</p>
 
@@ -107,19 +121,24 @@ export default function Items() {
                 <img
                   src={item.categoryPhotoUrl}
                   alt="Category"
-                  className="category-photo"
+                  className={styles.categoryPhoto}
                 />
               ) : (
-                <div className="category-photo placeholder">
+                <div
+                  className={styles.categoryPhoto + " " + styles.placeholder}
+                >
                   No Category Photo
                 </div>
               )}
 
-              <p>Units: {item.units}</p>
+              <p>Case Size: {item.units?.caseSize ?? "N/A"}</p>
+              <p>Bag Size: {item.units?.bagSize ?? "N/A"}</p>
+              <p>Cambro Size: {item.units?.cambroSize ?? "N/A"}</p>
+
               <p>Barcode: {item.barcode || "None"}</p>
 
               <button
-                className="edit-item-button"
+                className={styles.editItemButton}
                 onClick={() => {
                   setEditingItem(item);
                   setShowModal(true);
@@ -128,7 +147,7 @@ export default function Items() {
                 Edit
               </button>
               <button
-                className="delete-item-button"
+                className={styles.deleteItemButton}
                 onClick={() => {
                   setItemToDelete(item);
                   setShowDeleteModal(true);
@@ -137,7 +156,7 @@ export default function Items() {
                 Delete
               </button>
               <button
-                className="view-details-button"
+                className={styles.viewDetailsButton}
                 onClick={() => navigate(`/items/${item.itemId}`)}
               >
                 View Details

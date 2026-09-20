@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./CategoryModal.css";
+import styles from "../styles/models/CategoryModal.module.css";
 
 export default function AddCategoryModal({ onClose, onSave }) {
   const [form, setForm] = useState({

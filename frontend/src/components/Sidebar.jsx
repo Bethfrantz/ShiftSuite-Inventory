@@ -1,42 +1,42 @@
 import { NavLink } from "react-router-dom";
-import "./Sidebar.css";
+import styles from "../styles/components/Sidebar.module.css";
 
 export default function Sidebar() {
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <h2 className="sidebar-title">ShiftSuite</h2>
+    <aside className={styles["sidebar"]}>
+      <div className={styles["sidebar-header"]}>
+        <h2 className={styles["sidebar-title"]}>ShiftSuite</h2>
       </div>
 
-      <nav className="sidebar-nav">
-        <NavLink to="/" className="sidebar-link">
-          <span className="sidebar-icon">🏠</span>
-          <span className="sidebar-text">Dashboard</span>
+      <nav className={styles["sidebar-nav"]}>
+        <NavLink to="/" className={styles["sidebar-link"]}>
+          <span className={styles["sidebar-icon"]}>🏠</span>
+          <span className={styles["sidebar-text"]}>Dashboard</span>
         </NavLink>
 
-        <NavLink to="/inventory" className="sidebar-link">
-          <span className="sidebar-icon">📦</span>
-          <span className="sidebar-text">Inventory</span>
+        <NavLink to="/inventory" className={styles["sidebar-link"]}>
+          <span className={styles["sidebar-icon"]}>📦</span>
+          <span className={styles["sidebar-text"]}>Inventory</span>
         </NavLink>
 
-        <NavLink to="/items" className="sidebar-link">
-          <span className="sidebar-icon">📝</span>
-          <span className="sidebar-text">Items</span>
+        <NavLink to="/items" className={styles["sidebar-link"]}>
+          <span className={styles["sidebar-icon"]}>📝</span>
+          <span className={styles["sidebar-text"]}>Items</span>
         </NavLink>
 
-        <NavLink to="/reports" className="sidebar-link">
-          <span className="sidebar-icon">📊</span>
-          <span className="sidebar-text">Reports</span>
+        <NavLink to="/reports" className={styles["sidebar-link"]}>
+          <span className={styles["sidebar-icon"]}>📊</span>
+          <span className={styles["sidebar-text"]}>Reports</span>
         </NavLink>
 
-        <NavLink to="/invoices" className="sidebar-link">
-          <span className="sidebar-icon">🧾</span>
-          <span className="sidebar-text">Invoices</span>
+        <NavLink to="/invoices" className={styles["sidebar-link"]}>
+          <span className={styles["sidebar-icon"]}>🧾</span>
+          <span className={styles["sidebar-text"]}>Invoices</span>
         </NavLink>
 
-        <NavLink to="/adjustments" className="sidebar-link">
-          <span className="sidebar-icon">⚙️</span>
-          <span className="sidebar-text">Adjustments</span>
+        <NavLink to="/adjustments" className={styles["sidebar-link"]}>
+          <span className={styles["sidebar-icon"]}>⚙️</span>
+          <span className={styles["sidebar-text"]}>Adjustments</span>
         </NavLink>
       </nav>
     </aside>

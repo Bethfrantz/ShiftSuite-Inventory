@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./AddItemModal.css";
+import styles from "../styles/modals/AddItemModal.module.css";
 
 export default function AddItemModal({ onClose, onSave }) {
   const [form, setForm] = useState({
