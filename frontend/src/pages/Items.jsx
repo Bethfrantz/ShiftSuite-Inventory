@@ -23,7 +23,7 @@ export default function Items() {
 
   async function loadItems() {
     const data = await API.getItems();
-    setItems(data.items);
+    setItems(items);
   }
 
   useEffect(() => {
