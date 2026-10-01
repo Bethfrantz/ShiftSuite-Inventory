@@ -9,6 +9,9 @@ export default function ItemDetail() {
 
   const [item, setItem] = useState(null);
 
+  const params = new URLSearchParams(window.location.search);
+  const categoryId = params.get("category");
+
   async function loadItem() {
     const data = await API.getItem(itemId);
     setItem(data);
@@ -22,7 +25,12 @@ export default function ItemDetail() {
 
   return (
     <div className={styles.itemDetailPage}>
-      <button className={styles.backButton} onClick={() => navigate("/items")}>
+      <button
+        className={styles.backButton}
+        onClick={() =>
+          navigate(categoryId ? `/categories/${categoryId}` : "/items")
+        }
+      >
         ← Back to Items
       </button>
 
@@ -65,9 +73,26 @@ export default function ItemDetail() {
           <p>
             <strong>Barcode:</strong> {item.barcode || "None"}
           </p>
-          <p>
-            <strong>Units:</strong> {item.units}
-          </p>
+          <div className={styles.unitsBlock}>
+            <p>
+              <strong>Case Size:</strong> {item.units?.caseSize ?? "N/A"}
+            </p>
+            <p>
+              <strong>Bag Size:</strong> {item.units?.bagSize ?? "N/A"}
+            </p>
+            <p>
+              <strong>Cambro Size:</strong> {item.units?.cambroSize ?? "N/A"}
+            </p>
+            <p>
+              <strong>Allow Cambros:</strong>{" "}
+              {item.units?.allowCambros ? "Yes" : "No"}
+            </p>
+            <p>
+              <strong>Allow Singles:</strong>{" "}
+              {item.units?.allowSingles ? "Yes" : "No"}
+            </p>
+          </div>
+
           <p>
             <strong>Par:</strong> {item.par}
           </p>

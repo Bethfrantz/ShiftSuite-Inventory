@@ -1,5 +1,5 @@
 /* PAGE WRAPPER */
-.inventory-page {
+.inventoryPage {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-32);
@@ -8,40 +8,40 @@
 }
 
 /* PAGE TITLE */
-.inventory-page h1 {
+.inventoryPage h1 {
   font-size: 32px;
   font-weight: 600;
   margin-bottom: var(--space-24);
 }
 
 /* CONTROLS */
-.inventory-controls {
+.inventoryControls {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-16);
   margin-bottom: var(--space-32);
 }
 
-.inventory-controls select,
-.search-input {
+.inventoryControls select,
+.searchInput {
   padding: var(--space-12);
   border-radius: var(--radius-md);
   font-size: 16px;
 }
 
-.search-input {
+.searchInput {
   border: 2px solid var(--elmos-red);
   width: 260px;
 }
 
-.inventory-controls select {
+.inventoryControls select {
   border: 2px solid var(--elmos-yellow);
   background: var(--color-background);
   color: var(--color-text);
 }
 
 /* PRINT BUTTONS */
-.print-button {
+.printButton {
   padding: var(--space-12) var(--space-20);
   background: var(--elmos-yellow);
   color: var(--elmos-black);
@@ -54,7 +54,7 @@
     box-shadow 0.15s ease;
 }
 
-.print-button:hover {
+.printButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   background: var(--elmos-red);
@@ -62,14 +62,14 @@
 }
 
 /* GRID */
-.inventory-grid {
+.inventoryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--space-24);
 }
 
 /* ITEM CARD */
-.item-card {
+.itemCard {
   background: var(--color-background);
   border: 2px solid var(--elmos-red);
   border-radius: var(--radius-md);
@@ -80,13 +80,13 @@
     box-shadow 0.15s ease;
 }
 
-.item-card:hover {
+.itemCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* PHOTOS */
-.item-photo {
+.itemPhoto {
   width: 100%;
   height: 160px;
   object-fit: cover;
@@ -94,7 +94,7 @@
   margin-bottom: var(--space-16);
 }
 
-.category-photo {
+.categoryPhoto {
   width: 70px;
   height: 70px;
   object-fit: cover;
@@ -115,7 +115,7 @@
 }
 
 /* SAVE BUTTON */
-.save-button {
+.saveButton {
   margin-top: var(--space-32);
   padding: var(--space-12) var(--space-24);
   background: var(--elmos-red);
@@ -129,7 +129,7 @@
     box-shadow 0.15s ease;
 }
 
-.save-button:hover {
+.saveButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }

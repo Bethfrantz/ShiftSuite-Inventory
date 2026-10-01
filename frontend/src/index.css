@@ -92,3 +92,15 @@ button {
   margin-bottom: var(--space-24);
   color: var(--elmos-black);
 }
+.searchInput {
+  border: 1px solid #ccc;
+  border-radius: 8px; /* ← Rounded corners */
+  padding: 8px 12px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: #0078ff; /* Optional: nicer focus color */
+}

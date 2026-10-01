@@ -114,14 +114,14 @@
 }
 
 /* SEVERITY COLORS */
-.severity-high {
+.severityHigh {
   border-left-color: var(--elmos-red);
 }
 
-.severity-medium {
+.severityMedium {
   border-left-color: var(--elmos-yellow);
 }
 
-.severity-low {
+.severityLow {
   border-left-color: var(--elmos-green);
 }

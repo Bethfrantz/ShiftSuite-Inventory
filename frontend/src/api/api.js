@@ -22,8 +22,13 @@ const API = {
   /* ---------------- ITEMS ---------------- */
   getItems: async () => {
     const res = await fetch("/api/items");
-    const { data } = await normalize(res);
-    return data.items || []; // ALWAYS an array
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.items)) {
+      return [];
+    }
+
+    return data.items;
   },
 
   getItem: async (itemId) => {
@@ -80,8 +85,13 @@ const API = {
   /* ---------------- CATEGORIES ---------------- */
   getCategories: async () => {
     const res = await fetch("/api/categories");
-    const { data } = await normalize(res);
-    return data.categories || [];
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.categories)) {
+      return [];
+    }
+
+    return data.categories;
   },
 
   createCategory: async (payload) => {
@@ -124,21 +134,42 @@ const API = {
 
   getStoreDashboard: async (storeId) => {
     const res = await fetch(`/api/storeDashboard/${storeId}`);
-    const { data } = await normalize(res);
-    return data; // dashboard object
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data) {
+      return {
+        kpiAnomalies: [],
+        kpiHistory: {},
+        kpis: {},
+        storeScoreTrend: {},
+        storeScoreHistory: [],
+        storeScoreForecast: [],
+      };
+    }
+
+    return data;
   },
 
   /* ---------------- ALERTS ---------------- */
   getAlerts: async (storeId) => {
     const res = await fetch(`/api/alerts/${storeId}`);
-    const { data } = await normalize(res);
-    return data.alerts || [];
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.alerts)) {
+      return [];
+    }
+
+    return data.alerts;
   },
 
   /* ---------------- INVENTORY ---------------- */
   getInventoryItems: async (storeId) => {
     const res = await fetch(`/api/inventory/items/${storeId}`);
-    const { data } = await normalize(res);
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.items)) {
+      return [];
+    }
     return data.items || [];
   },
 
@@ -180,30 +211,50 @@ const API = {
 
   getWasteHistory: async (storeId) => {
     const res = await fetch(`/api/waste/history/${storeId}`);
-    const { data } = await normalize(res);
-    return data.history || [];
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.history)) {
+      return [];
+    }
+
+    return data.history;
   },
 
   getWasteCost: async (storeId, start, end) => {
     const res = await fetch(
       `/api/wasteCost/${storeId}?startDate=${start}&endDate=${end}`,
     );
-    const { data } = await normalize(res);
-    return data.cost || null;
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || typeof data.cost !== "number") {
+      return null;
+    }
+
+    return data.cost;
   },
 
   /* ---------------- FINISHED PRODUCTS ---------------- */
   getFinishedProducts: async () => {
     const res = await fetch("/api/finishedProducts");
-    const { data } = await normalize(res);
-    return data.products || [];
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.products)) {
+      return [];
+    }
+
+    return data.products;
   },
 
   /* ---------------- DISTRICT COMPARISON ---------------- */
   getDistrictComparison: async () => {
     const res = await fetch("/api/districtComparison");
-    const { data } = await normalize(res);
-    return data.districts || [];
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.districts)) {
+      return [];
+    }
+
+    return data.districts;
   },
 };
 

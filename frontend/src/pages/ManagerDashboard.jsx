@@ -10,33 +10,43 @@ export default function ManagerDashboard() {
 
   async function loadStores() {
     const data = await API.getStores();
-    setStores(stores);
+    console.log("API.getStores() returned:", data);
+    setStores(data); // ✔ FIXED
   }
 
   async function loadDashboards() {
-    const results = [];
+    const results = await Promise.all(
+      stores.map(async (store) => {
+        const d = await API.getStoreDashboard(store._id);
+        console.log("Dashboard for store:", store.name, d);
+        return { store, dashboard: d };
+      }),
+    );
 
-    for (const store of stores) {
-      const d = await API.getStoreDashboard(store._id);
-      results.push({ store, dashboard: d });
-    }
-
+    console.log("FINAL DASHBOARDS:", results);
     setDashboards(results);
   }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     loadStores();
   }, []);
 
   useEffect(() => {
+    console.log("STORES state updated:", stores);
     if (stores.length > 0) loadDashboards();
   }, [stores]);
+
+  console.log("Rendering dashboards:", dashboards);
 
   return (
     <div className={styles.managerDashboardPage}>
       <h1>Manager Dashboard</h1>
 
-      <div className={styles.managerGrid}>
+      {dashboards.length === 0 && (
+        <p className={styles.loadingMessage}>Loading dashboards...</p>
+      )}
+
+      <div className={styles.managerGrid} key={dashboards.length}>
         {dashboards.map(({ store, dashboard }) => (
           <div className={styles.managerCard} key={store._id}>
             <h2>{store.name}</h2>
@@ -46,19 +56,21 @@ export default function ManagerDashboard() {
             </div>
 
             <div className={styles.kpiSection}>
-              {Object.entries(dashboard.kpiTrendCharts).map(([key, kpi]) => (
-                <div className={styles.kpiRow} key={key}>
-                  <span className={styles.kpiLabel}>{kpi.label}</span>
+              {Object.entries(dashboard.kpiTrendCharts || {}).map(
+                ([key, kpi]) => (
+                  <div className={styles.kpiRow} key={key}>
+                    <span className={styles.kpiLabel}>{kpi.label}</span>
 
-                  <span className={`kpi-arrow ${kpi.direction}`}>
-                    {kpi.direction === "up" && "▲"}
-                    {kpi.direction === "down" && "▼"}
-                    {kpi.direction === "flat" && "■"}
-                  </span>
+                    <span className={`kpi-arrow ${kpi.direction}`}>
+                      {kpi.direction === "up" && "▲"}
+                      {kpi.direction === "down" && "▼"}
+                      {kpi.direction === "flat" && "■"}
+                    </span>
 
-                  <span className={styles.kpiStrength}>{kpi.strength}</span>
-                </div>
-              ))}
+                    <span className={styles.kpiStrength}>{kpi.strength}</span>
+                  </div>
+                ),
+              )}
             </div>
 
             <div className={styles.managerActions}>

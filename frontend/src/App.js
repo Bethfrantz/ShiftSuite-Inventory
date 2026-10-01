@@ -16,6 +16,8 @@ import StoreAlerts from "./pages/StoreAlerts";
 import WasteCost from "./pages/WasteCost";
 import HomeDashboard from "./pages/HomeDashboard";
 import "./App.css";
+import Categories from "./pages/Categories";
+import CategoryDetail from "./pages/CategoryDetail";
 
 function App() {
   return (
@@ -30,15 +32,17 @@ function App() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/items" element={<Items />} />
           <Route path="/items/:itemId" element={<ItemDetail />} />
+          <Route path="/categories" element={<Categories />} />
 
           <Route path="/reports" element={<Reports />} />
           <Route path="/count-history" element={<CountHistory />} />
 
-          <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+          <Route path="/manager" element={<ManagerDashboard />} />
           <Route path="/waste" element={<WasteTracking />} />
           <Route path="/district-comparison" element={<DistrictComparison />} />
           <Route path="/alerts" element={<StoreAlerts />} />
           <Route path="/waste-cost" element={<WasteCost />} />
+          <Route path="/categories/:id" element={<CategoryDetail />} />
         </Routes>
       </div>
     </div>

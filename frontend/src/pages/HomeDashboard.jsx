@@ -24,7 +24,7 @@ export default function HomeDashboard() {
 
     if (storesData.length > 0) {
       const alertsRes = await API.getAlerts(storesData[0]._id);
-      setAlerts(alertsRes.alerts.slice(0, 5));
+      setAlerts(alertsRes.slice(0, 5));
     }
   }
 

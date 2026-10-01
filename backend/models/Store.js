@@ -2,17 +2,20 @@ const mongoose = require("mongoose");
 
 const StoreSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    storeNumber: { type: Number, required: true },
+    storeId: { type: String, required: true }, // NEW
+    storeName: { type: String, required: true }, // NEW
+    districtId: { type: String, default: "Main" }, // NEW
+
     address: { type: String, default: "" },
     driveThruEnabled: { type: Boolean, default: false },
     driveThruLanes: { type: Number, default: 1 },
 
     orderingFrequency: {
       type: Map,
-      of: Number, // e.g., { "Gordon": 2, "Sofo": 1 }
+      of: Number,
       default: {},
     },
+
     location: {
       lat: Number,
       lng: Number,

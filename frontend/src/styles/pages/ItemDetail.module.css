@@ -1,5 +1,5 @@
 /* PAGE WRAPPER */
-.item-detail-page {
+.itemDetailPage {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-32);
@@ -8,7 +8,7 @@
 }
 
 /* BACK BUTTON */
-.back-button {
+.backButton {
   background: var(--elmos-yellow);
   border: 2px solid var(--elmos-red);
   padding: var(--space-12) var(--space-20);
@@ -21,13 +21,13 @@
     box-shadow 0.15s ease;
 }
 
-.back-button:hover {
+.backButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* MAIN CARD */
-.item-detail-card {
+.itemDetailCard {
   display: flex;
   gap: var(--space-32);
   background: var(--color-background);
@@ -38,7 +38,7 @@
 }
 
 /* LEFT SIDE */
-.item-detail-left {
+.itemDetailLeft {
   display: flex;
   flex-direction: column;
   gap: var(--space-20);
@@ -46,7 +46,7 @@
 }
 
 /* MAIN PHOTO */
-.item-detail-photo {
+.itemDetailPhoto {
   width: 320px;
   height: 320px;
   object-fit: cover;
@@ -55,7 +55,7 @@
 }
 
 /* CATEGORY PHOTO */
-.item-detail-category-photo {
+.itemDetailCategoryPhoto {
   width: 140px;
   height: 140px;
   object-fit: cover;
@@ -75,33 +75,33 @@
 }
 
 /* RIGHT SIDE */
-.item-detail-right {
+.itemDetailRight {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-16);
 }
 
-.item-detail-right h2 {
+.itemDetailRight h2 {
   font-size: 28px;
   font-weight: 600;
   margin-bottom: var(--space-12);
 }
 
-.item-detail-right p {
+.itemDetailRight p {
   font-size: 16px;
   line-height: 1.5;
 }
 
 /* ACTIONS */
-.item-detail-actions {
+.itemDetailActions {
   margin-top: var(--space-32);
   display: flex;
   gap: var(--space-20);
 }
 
-.edit-button,
-.delete-button {
+.editButton,
+.deleteButton {
   padding: var(--space-12) var(--space-20);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -112,24 +112,24 @@
 }
 
 /* EDIT BUTTON */
-.edit-button {
+.editButton {
   background: var(--elmos-yellow);
   border: 2px solid var(--elmos-red);
 }
 
-.edit-button:hover {
+.editButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* DELETE BUTTON */
-.delete-button {
+.deleteButton {
   background: var(--elmos-red);
   color: var(--elmos-gray);
   border: none;
 }
 
-.delete-button:hover {
+.deleteButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }

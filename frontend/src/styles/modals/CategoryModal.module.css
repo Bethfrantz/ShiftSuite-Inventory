@@ -106,3 +106,16 @@
     opacity: 1;
   }
 }
+.categoryCard {
+  background: var(--color-background);
+  border: 2px solid var(--elmos-red);
+  border-radius: var(--radius-md);
+  padding: var(--space-20);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.categoryCard:hover {
+  transform: scale(1.02);
+}

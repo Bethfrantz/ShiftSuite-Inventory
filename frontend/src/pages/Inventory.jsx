@@ -11,6 +11,7 @@ export default function Inventory() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [vendorFilter, setVendorFilter] = useState("");
   const [parFilter, setParFilter] = useState("");
+  const [stores, setStores] = useState([]);
 
   async function loadItems() {
     if (!storeId) return;
@@ -69,16 +70,28 @@ export default function Inventory() {
     alert("Counts saved!");
   }
 
+  async function loadStores() {
+    const data = await API.getStores();
+    setStores(data);
+  }
+
+  useEffect(() => {
+    loadStores();
+  }, []);
+
   return (
     <div className={styles.inventoryPage}>
       <h1>Inventory</h1>
 
       <div className={styles.inventoryControls}>
         {/* Store Selector */}
-        <select onChange={(e) => setStoreId(e.target.value)}>
+        <select value={storeId} onChange={(e) => setStoreId(e.target.value)}>
           <option value="">Select Store</option>
-          <option value="1">Store 1</option>
-          <option value="2">Store 2</option>
+          {stores.map((s) => (
+            <option key={s._id} value={s._id}>
+              {s.storeName}
+            </option>
+          ))}
         </select>
 
         {/* Search */}
@@ -87,7 +100,7 @@ export default function Inventory() {
           placeholder="Search items..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
+          className="searchInput"
         />
 
         {/* Category Filter */}

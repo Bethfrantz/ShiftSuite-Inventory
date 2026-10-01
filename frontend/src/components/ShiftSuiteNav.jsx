@@ -11,8 +11,8 @@ export default function ShiftSuiteNav() {
           <Link to="/" className={styles.topnavLink}>
             Home
           </Link>
-          <Link to="/items" className={styles.topnavLink}>
-            Items
+          <Link to="/categories" className={styles.topnavLink}>
+            Categories
           </Link>
           <Link to="/inventory" className={styles.topnavLink}>
             Inventory
@@ -20,6 +20,7 @@ export default function ShiftSuiteNav() {
           <Link to="/manager" className={styles.topnavLink}>
             Manager
           </Link>
+
           <Link to="/reports" className={styles.topnavLink}>
             Reports
           </Link>

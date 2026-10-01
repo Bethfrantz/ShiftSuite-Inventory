@@ -1,5 +1,5 @@
 /* PAGE WRAPPER */
-.district-page {
+.districtPage {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-32);
@@ -8,24 +8,24 @@
 }
 
 /* PAGE TITLE */
-.district-page h1 {
+.districtPage h1 {
   font-size: 32px;
   font-weight: 600;
   margin-bottom: var(--space-24);
 }
 
 /* EXECUTIVE SUMMARY */
-.executive-summary {
+.executiveSummary {
   margin-bottom: var(--space-40);
 }
 
-.summary-grid {
+.summaryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--space-24);
 }
 
-.summary-card {
+.summaryCard {
   background: var(--color-background);
   border: 3px solid var(--elmos-red);
   padding: var(--space-20);
@@ -36,23 +36,23 @@
     box-shadow 0.15s ease;
 }
 
-.summary-card:hover {
+.summaryCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* RANKING SECTION */
-.ranking-section {
+.rankingSection {
   margin-top: var(--space-40);
 }
 
-.ranking-grid {
+.rankingGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--space-24);
 }
 
-.ranking-card {
+.rankingCard {
   background: var(--color-background);
   border: 2px solid var(--elmos-yellow);
   padding: var(--space-20);
@@ -63,34 +63,34 @@
     box-shadow 0.15s ease;
 }
 
-.ranking-card:hover {
+.rankingCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.ranking-card table {
+.rankingCard table {
   width: 100%;
   border-collapse: collapse;
   margin-top: var(--space-12);
 }
 
-.ranking-card td {
+.rankingCard td {
   padding: var(--space-8);
   border-bottom: 1px solid var(--elmos-yellow);
 }
 
 /* KPI SECTION */
-.kpi-section {
+.kpiSection {
   margin-top: var(--space-40);
 }
 
-.kpi-grid {
+.kpiGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: var(--space-24);
 }
 
-.kpi-card {
+.kpiCard {
   background: var(--color-background);
   border: 2px solid var(--elmos-red);
   padding: var(--space-20);
@@ -101,35 +101,35 @@
     box-shadow 0.15s ease;
 }
 
-.kpi-card:hover {
+.kpiCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.kpi-card table {
+.kpiCard table {
   width: 100%;
   border-collapse: collapse;
   margin-top: var(--space-12);
 }
 
-.kpi-card th,
-.kpi-card td {
+.kpiCard th,
+.kpiCard td {
   padding: var(--space-8);
   border-bottom: 1px solid var(--elmos-red);
 }
 
 /* QUICK ACTIONS */
-.quick-actions {
+.quickActions {
   margin-top: var(--space-40);
 }
 
-.quick-grid {
+.quickGrid {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-16);
 }
 
-.quick-button {
+.quickButton {
   background: var(--elmos-yellow);
   border: 2px solid var(--elmos-red);
   padding: var(--space-12) var(--space-20);
@@ -141,7 +141,7 @@
     box-shadow 0.15s ease;
 }
 
-.quick-button:hover {
+.quickButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }

@@ -35,7 +35,7 @@ export default function WasteCost() {
           <option value="">Select Store</option>
           {stores.map((s) => (
             <option key={s._id} value={s._id}>
-              {s.name}
+              {s.storeName}
             </option>
           ))}
         </select>

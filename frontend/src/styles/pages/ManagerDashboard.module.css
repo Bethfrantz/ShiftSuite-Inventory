@@ -1,5 +1,5 @@
 /* PAGE WRAPPER */
-.manager-dashboard-page {
+.managerDashboardPage {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-32);
@@ -8,21 +8,21 @@
 }
 
 /* PAGE TITLE */
-.manager-dashboard-page h1 {
+.managerDashboardPage h1 {
   font-size: 32px;
   font-weight: 600;
   margin-bottom: var(--space-24);
 }
 
 /* GRID */
-.manager-grid {
+.managerGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: var(--space-32);
 }
 
 /* CARD */
-.manager-card {
+.managerCard {
   background: var(--color-background);
   border: 3px solid var(--elmos-red);
   border-radius: var(--radius-lg);
@@ -33,30 +33,30 @@
     box-shadow 0.15s ease;
 }
 
-.manager-card:hover {
+.managerCard:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* STORE SCORE */
-.store-score {
+.storeScore {
   margin-bottom: var(--space-20);
 }
 
-.store-score span {
+.storeScore span {
   font-size: 40px;
   font-weight: bold;
   color: var(--elmos-green);
 }
 
 /* KPI SECTION */
-.kpi-section {
+.kpiSection {
   margin-top: var(--space-20);
   border-top: 2px solid var(--elmos-yellow);
   padding-top: var(--space-20);
 }
 
-.kpi-row {
+.kpiRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -64,41 +64,41 @@
   border-bottom: 1px solid var(--elmos-yellow);
 }
 
-.kpi-label {
+.kpiLabel {
   font-weight: 600;
 }
 
-.kpi-arrow {
+.kpiArrow {
   font-size: 20px;
   font-weight: bold;
 }
 
-.kpi-arrow.up {
+.kpiArrow.up {
   color: green;
 }
 
-.kpi-arrow.down {
+.kpiArrow.down {
   color: red;
 }
 
-.kpi-arrow.flat {
+.kpiArrow.flat {
   color: gray;
 }
 
-.kpi-strength {
+.kpiStrength {
   font-weight: 600;
   color: var(--color-text);
 }
 
 /* ACTIONS */
-.manager-actions {
+.managerActions {
   margin-top: var(--space-28);
   display: flex;
   flex-direction: column;
   gap: var(--space-16);
 }
 
-.action-button {
+.actionButton {
   background: var(--elmos-yellow);
   border: 2px solid var(--elmos-red);
   padding: var(--space-12) var(--space-20);
@@ -110,7 +110,7 @@
     box-shadow 0.15s ease;
 }
 
-.action-button:hover {
+.actionButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }

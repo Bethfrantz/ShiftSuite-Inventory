@@ -1,5 +1,5 @@
 /* PAGE WRAPPER */
-.waste-cost-page {
+.wasteCostPage {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-32);
@@ -8,14 +8,14 @@
 }
 
 /* PAGE TITLE */
-.waste-cost-page h1 {
+.wasteCostPage h1 {
   font-size: 32px;
   font-weight: 600;
   margin-bottom: var(--space-24);
 }
 
 /* CONTROLS */
-.controls {
+.wasteCostPage .controls {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-16);
@@ -32,8 +32,8 @@
 }
 
 /* BUTTONS */
-.load-button,
-.print-button {
+.loadButton,
+.printButton {
   padding: var(--space-12) var(--space-20);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -43,32 +43,39 @@
     box-shadow 0.15s ease;
 }
 
-.load-button {
+.wasteCostPage .loadButton {
   background: var(--elmos-green);
   color: var(--elmos-gray);
   border: none;
+  padding: var(--space-12) var(--space-20);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.print-button {
+.printButton {
   background: var(--elmos-yellow);
   border: 2px solid var(--elmos-red);
 }
 
-.load-button:hover,
-.print-button:hover {
+.loadButton:hover,
+.printButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* SUMMARY GRID */
-.summary-grid {
+.summaryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--space-24);
   margin-bottom: var(--space-40);
 }
 
-.summary-card {
+.summaryCard {
   background: var(--color-background);
   border: 3px solid var(--elmos-red);
   border-radius: var(--radius-md);
@@ -77,27 +84,27 @@
   text-align: center;
 }
 
-.summary-card h3 {
+.summaryCard h3 {
   margin-bottom: var(--space-12);
   font-size: 20px;
   font-weight: 600;
 }
 
-.summary-value {
+.summaryValue {
   font-size: 36px;
   font-weight: bold;
   color: var(--elmos-green);
 }
 
 /* TABLES */
-.waste-table {
+.wasteTable {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: var(--space-40);
   font-size: 15px;
 }
 
-.waste-table th {
+.wasteTable th {
   background: var(--elmos-yellow);
   color: var(--elmos-black);
   padding: var(--space-12);
@@ -106,17 +113,17 @@
   text-align: left;
 }
 
-.waste-table td {
+.wasteTable td {
   border: 1px solid var(--elmos-yellow);
   padding: var(--space-12);
 }
 
-.waste-table tbody tr:hover {
+.wasteTable tbody tr:hover {
   background: rgba(255, 230, 150, 0.25);
 }
 
 /* INGREDIENT BUTTON */
-.ingredient-button {
+.ingredientButton {
   background: var(--elmos-yellow);
   border: 2px solid var(--elmos-red);
   padding: var(--space-8) var(--space-16);
@@ -128,13 +135,13 @@
     box-shadow 0.15s ease;
 }
 
-.ingredient-button:hover {
+.ingredientButton:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* MODAL OVERLAY */
-.modal-overlay {
+.modalOverlay {
   position: fixed;
   top: 0;
   left: 0;

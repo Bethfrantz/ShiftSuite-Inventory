@@ -4,6 +4,7 @@ import styles from "../styles/pages/Categories.module.css";
 import CategoryEditModal from "../components/CategoryEditModal";
 import AddCategoryModal from "../components/AddCategoryModal";
 import DeleteCategoryModal from "../components/DeleteCategoryModal";
+import { useNavigate } from "react-router-dom";
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -14,6 +15,7 @@ export default function Categories() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const navigate = useNavigate();
 
   async function loadCategories() {
     const data = await API.getCategories();
@@ -48,10 +50,14 @@ export default function Categories() {
           + Add Category
         </button>
       </div>
-
-      <div className={styles.categoriesGrid}>
+      <div className={styles.categoryGrid}>
         {filteredCategories.map((cat) => (
-          <div className={styles.categoryCard} key={cat._id}>
+          <div
+            className={styles.categoryCard}
+            key={cat._id}
+            onClick={() => navigate(`/categories/${cat._id}`)}
+          >
+            {/* Category Photo */}
             {cat.photoUrl ? (
               <img
                 src={cat.photoUrl}
@@ -64,13 +70,20 @@ export default function Categories() {
               </div>
             )}
 
-            <h3>{cat.name}</h3>
-            <p>{cat.description || "No description"}</p>
+            {/* Category Name */}
+            <h2>{cat.name}</h2>
 
+            {/* Category Description */}
+            <p className={styles.categoryDescription}>
+              {cat.description || "No description provided."}
+            </p>
+
+            {/* Actions */}
             <div className={styles.categoryActions}>
               <button
                 className={styles.editCategoryButton}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); // prevent card click
                   setSelectedCategory(cat);
                   setShowEditModal(true);
                 }}
@@ -80,7 +93,8 @@ export default function Categories() {
 
               <button
                 className={styles.deleteCategoryButton}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); // prevent card click
                   setSelectedCategory(cat);
                   setShowDeleteModal(true);
                 }}

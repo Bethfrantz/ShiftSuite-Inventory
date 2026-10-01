@@ -810,38 +810,48 @@ router.get("/:storeId", async (req, res, next) => {
         driveThruEnabled: store.driveThruEnabled,
         driveThruLanes: store.driveThruLanes,
       },
-      usageSummary,
-      wasteSummary,
-      shrinkageSummary,
-      inventorySummary,
-      profitability,
-      pricing,
-      demandForecast,
-      staffing,
-      replenishment,
-      batchPrepSchedule,
-      batchPrepCalendar,
-      kpis,
+
+      usageSummary: usageSummary || {},
+      wasteSummary: wasteSummary || {},
+      shrinkageSummary: shrinkageSummary || [],
+      inventorySummary: inventorySummary || [],
+
+      profitability: profitability || {},
+      pricing: pricing || {},
+      demandForecast: demandForecast || {},
+      staffing: staffing || {},
+      replenishment: replenishment || {},
+      batchPrepSchedule: batchPrepSchedule || {},
+      batchPrepCalendar: batchPrepCalendar || {},
+
+      kpis: kpis || {},
+
       storeScore: {
-        score: storeScore,
-        grade: storeScoreMeta.grade,
-        color: storeScoreMeta.color,
+        score: storeScore ?? 0,
+        grade: storeScoreMeta?.grade ?? "N/A",
+        color: storeScoreMeta?.color ?? "gray",
       },
-      kpiHistory,
-      kpiHistoryScores,
-      kpiTrends,
-      kpiTrendCharts,
-      storeScoreHistory,
-      storeScoreTrend,
-      storeScoreTrendChart,
-      kpiAnomalies,
-      storeScoreForecast,
-      storeScoreForecastChart,
-      storeScoreForecastSlope,
+
+      // ⭐ ALWAYS return arrays/objects
+      kpiHistory: kpiHistory || {},
+      kpiHistoryScores: kpiHistoryScores || [],
+      kpiTrends: kpiTrends || [],
+      kpiTrendCharts: kpiTrendCharts || [],
+
+      storeScoreHistory: storeScoreHistory || [],
+      storeScoreTrend: storeScoreTrend || {},
+      storeScoreTrendChart: storeScoreTrendChart || [],
+
+      kpiAnomalies: kpiAnomalies || [],
+
+      storeScoreForecast: storeScoreForecast || [],
+      storeScoreForecastChart: storeScoreForecastChart || [],
+      storeScoreForecastSlope: storeScoreForecastSlope || {},
+
       requestId: req.requestId,
     });
   } catch (err) {
-    next(err);
+    console.error("Dashboard error:", err);
   }
 });
 

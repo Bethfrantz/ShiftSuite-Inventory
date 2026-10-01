@@ -23,7 +23,7 @@ export default function Items() {
 
   async function loadItems() {
     const data = await API.getItems();
-    setItems(items);
+    setItems(data);
   }
 
   useEffect(() => {
@@ -37,134 +37,87 @@ export default function Items() {
       item.barcode?.toLowerCase().includes(search.toLowerCase());
 
     const matchesCategory =
-      categoryFilter === "" || item.categoryPhotoUrl === categoryFilter;
+      categoryFilter === "" || item.categoryId?.photoUrl === categoryFilter;
 
     const matchesVendor = vendorFilter === "" || item.vendor === vendorFilter;
 
     return matchesSearch && matchesCategory && matchesVendor;
   });
+  // Group items by category
+  const groupedByCategory = filteredItems.reduce((acc, item) => {
+    const cat = item.categoryId;
+    if (!cat) return acc;
+
+    if (!acc[cat._id]) {
+      acc[cat._id] = {
+        category: cat,
+        items: [],
+      };
+    }
+
+    acc[cat._id].items.push(item);
+    return acc;
+  }, {});
 
   return (
     <div className={styles.itemsPage}>
       <h1>Items</h1>
 
-      <div className={styles.itemsControls}>
-        <input
-          type="text"
-          placeholder="Search items..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className={styles.searchInput}
-        />
+      <div className={styles.itemsControls}>... filters, buttons ...</div>
 
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className={styles.categoryFilter}
-        >
-          <option value="">All Categories</option>
-          {[...new Set(items.map((i) => i.categoryPhotoUrl))].map(
-            (cat, idx) => (
-              <option key={idx} value={cat}>
-                Category {idx + 1}
-              </option>
-            ),
-          )}
-        </select>
-
-        <select
-          value={vendorFilter}
-          onChange={(e) => setVendorFilter(e.target.value)}
-        >
-          <option value="">All Vendors</option>
-          {[...new Set(items.map((i) => i.vendor))].map((v) => (
-            <option key={v} value={v}>
-              {v}
-            </option>
-          ))}
-        </select>
-
-        <button
-          className={styles.addItemButton}
-          onClick={() => setShowAddModal(true)}
-        >
-          + Add Item
-        </button>
-        <button
-          className={styles.bulkImportButton}
-          onClick={() => setShowBulkModal(true)}
-        >
-          Import CSV
-        </button>
-      </div>
-
-      <div className={styles.itemsGrid}>
-        {filteredItems.map((item) => (
-          <div className={styles.itemCard} key={item.itemId}>
-            {item.photoUrl ? (
+      {/* CATEGORY GRID */}
+      <div className={styles.categoryGrid}>
+        {Object.values(groupedByCategory).map((group) => (
+          <div className={styles.categoryCard} key={group.category._id}>
+            {group.category.photoUrl ? (
               <img
-                src={item.photoUrl}
-                alt={item.name}
-                className={styles.itemPhoto}
+                src={group.category.photoUrl}
+                alt={group.category.name}
+                className={styles.categoryPhoto}
               />
             ) : (
-              <div className={styles.itemPhoto + " " + styles.placeholder}>
-                No Photo
+              <div className={styles.categoryPhoto + " " + styles.placeholder}>
+                No Category Photo
               </div>
             )}
 
-            <div className={styles.itemInfo}>
-              <h3>{item.name}</h3>
-              <p>{item.vendor}</p>
+            <h2>{group.category.name}</h2>
 
-              {item.categoryPhotoUrl ? (
-                <img
-                  src={item.categoryPhotoUrl}
-                  alt="Category"
-                  className={styles.categoryPhoto}
-                />
-              ) : (
-                <div
-                  className={styles.categoryPhoto + " " + styles.placeholder}
-                >
-                  No Category Photo
+            <div className={styles.itemsInsideCategory}>
+              {group.items.map((item) => (
+                <div className={styles.itemCard} key={item._id}>
+                  <h4>{item.name}</h4>
+                  <p>{item.vendor}</p>
+
+                  {item.photoUrl ? (
+                    <img
+                      src={item.photoUrl}
+                      alt={item.name}
+                      className={styles.itemPhotoSmall}
+                    />
+                  ) : (
+                    <div
+                      className={
+                        styles.itemPhotoSmall + " " + styles.placeholder
+                      }
+                    >
+                      No Photo
+                    </div>
+                  )}
+
+                  <button
+                    className={styles.viewDetailsButton}
+                    onClick={() => navigate(`/items/${item.itemId}`)}
+                  >
+                    View Details
+                  </button>
                 </div>
-              )}
-
-              <p>Case Size: {item.units?.caseSize ?? "N/A"}</p>
-              <p>Bag Size: {item.units?.bagSize ?? "N/A"}</p>
-              <p>Cambro Size: {item.units?.cambroSize ?? "N/A"}</p>
-
-              <p>Barcode: {item.barcode || "None"}</p>
-
-              <button
-                className={styles.editItemButton}
-                onClick={() => {
-                  setEditingItem(item);
-                  setShowModal(true);
-                }}
-              >
-                Edit
-              </button>
-              <button
-                className={styles.deleteItemButton}
-                onClick={() => {
-                  setItemToDelete(item);
-                  setShowDeleteModal(true);
-                }}
-              >
-                Delete
-              </button>
-              <button
-                className={styles.viewDetailsButton}
-                onClick={() => navigate(`/items/${item.itemId}`)}
-              >
-                View Details
-              </button>
+              ))}
             </div>
           </div>
         ))}
       </div>
+
       {showModal && (
         <ItemEditModal
           item={editingItem}
