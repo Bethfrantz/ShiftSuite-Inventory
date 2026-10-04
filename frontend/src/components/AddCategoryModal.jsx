@@ -14,8 +14,11 @@ export default function AddCategoryModal({ onClose, onSave }) {
   }
 
   return (
-    <div className={modalStyles.modalOverlay}>
-      <div className={modalStyles.modalBox}>
+    <div className={modalStyles.modalOverlay} onClick={onClose}>
+      <div
+        className={modalStyles.modalBox}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={modalStyles.modalHeader}>
           <h2>Add Category</h2>
           <button className={modalStyles.modalCloseButton} onClick={onClose}>

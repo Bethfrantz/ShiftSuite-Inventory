@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import modalStyles from "../styles/modals/Modal.module.css";
 import styles from "../styles/modals/CategoryModal.module.css";
 
@@ -9,15 +10,47 @@ export default function CategoryEditModal({ category, onClose, onSave }) {
     photoUrl: category.photoUrl,
   });
 
+  const [errors, setErrors] = useState({});
+
+  // ⭐ ESC‑key close
+  useEffect(() => {
+    function handleEsc(e) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
+
   function updateField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  return (
-    <div className={modalStyles.modalOverlay}>
-      <div className={modalStyles.modalBox}>
+  function handleSubmit() {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = "Category name is required.";
+
+    if (form.photoUrl && !form.photoUrl.startsWith("http")) {
+      newErrors.photoUrl = "Photo URL must be a valid link.";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      onSave(form);
+    }
+  }
+
+  return createPortal(
+    <div className={modalStyles.modalOverlay} onClick={onClose}>
+      <div
+        className={modalStyles.modalBox}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={modalStyles.modalHeader}>
-          <h2>Edit Category</h2>
+          <h2>
+            <span className={modalStyles.icon}>📁</span> Edit Category
+          </h2>
           <button className={modalStyles.modalCloseButton} onClick={onClose}>
             Close
           </button>
@@ -31,6 +64,7 @@ export default function CategoryEditModal({ category, onClose, onSave }) {
             value={form.name}
             onChange={(e) => updateField("name", e.target.value)}
           />
+          {errors.name && <div className={styles.errorText}>{errors.name}</div>}
 
           <label className={styles.modalLabel}>Description</label>
           <input
@@ -47,6 +81,9 @@ export default function CategoryEditModal({ category, onClose, onSave }) {
             value={form.photoUrl}
             onChange={(e) => updateField("photoUrl", e.target.value)}
           />
+          {errors.photoUrl && (
+            <div className={styles.errorText}>{errors.photoUrl}</div>
+          )}
         </div>
 
         <div className={styles.modalActions}>
@@ -54,11 +91,12 @@ export default function CategoryEditModal({ category, onClose, onSave }) {
             Cancel
           </button>
 
-          <button className={styles.modalSave} onClick={() => onSave(form)}>
+          <button className={styles.modalSave} onClick={handleSubmit}>
             Save
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.getElementById("modal-root"),
   );
 }

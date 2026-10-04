@@ -18,6 +18,14 @@ export default function ItemDetail() {
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
 
+  useEffect(() => {
+    if (editingItem || deletingItem) {
+      document.body.style.overflow = "hidden"; // Disable scrolling when modal is open
+    } else {
+      document.body.style.overflow = "auto"; // Enable scrolling when modal is closed
+    }
+  }, [editingItem, deletingItem]);
+
   async function loadItem() {
     const data = await API.getItem(itemId);
     setItem(data);

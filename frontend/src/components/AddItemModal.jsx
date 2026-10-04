@@ -22,8 +22,11 @@ export default function AddItemModal({ onClose, onSave }) {
   }
 
   return (
-    <div className={modalStyles.modalOverlay}>
-      <div className={modalStyles.modalBox}>
+    <div className={modalStyles.modalOverlay} onClick={onClose}>
+      <div
+        className={modalStyles.modalBox}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={modalStyles.modalHeader}>
           <h2>Add New Item</h2>
           <button className={modalStyles.modalCloseButton} onClick={onClose}>

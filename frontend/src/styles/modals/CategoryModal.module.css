@@ -79,3 +79,8 @@
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
+.errorText {
+  color: var(--elmos-red);
+  font-size: 13px;
+  margin-top: 4px;
+}
