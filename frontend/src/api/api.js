@@ -83,6 +83,11 @@ const API = {
   },
 
   /* ---------------- CATEGORIES ---------------- */
+  getCategory: async (id) => {
+    const res = await fetch(`/api/categories/${id}`);
+    const { data } = await normalize(res);
+    return data.category || null;
+  },
   getCategories: async () => {
     const res = await fetch("/api/categories");
     const { ok, data } = await normalize(res);
@@ -93,7 +98,6 @@ const API = {
 
     return data.categories;
   },
-
   createCategory: async (payload) => {
     const res = await fetch("/api/categories", {
       method: "POST",
@@ -255,6 +259,36 @@ const API = {
     }
 
     return data.districts;
+  },
+
+  /* ---------------- MANAGER DASHBOARD ---------------- */
+  getManagerDashboard: async () => {
+    const res = await fetch("/api/managerDashboard");
+    const { ok, data } = await normalize(res);
+  },
+  /* ---------------- HOME DASHBOARD ---------------- */
+  getHomeDashboard: async () => {
+    const res = await fetch("/api/homeDashboard");
+    const { ok, data } = await normalize(res);
+  },
+
+  /* ---------------- STORE COUNT HISTORY ---------------- */
+  getStoreCountHistory: async (storeId, itemId, start, end) => {
+    const res = await fetch(
+      `/api/storeCountHistory/${storeId}/${itemId}?start=${start}&end=${end}`,
+    );
+    const { ok, data } = await normalize(res);
+  },
+  /* ---------------- STORE INVENTORY ITEMS ---------------- */
+  getStoreInventoryItems: async (storeId) => {
+    const res = await fetch(`/api/storeInventoryItems/${storeId}`);
+    const { ok, data } = await normalize(res);
+  },
+
+  /* ---------------- STORE FINISHED PRODUCTS ---------------- */
+  getStoreFinishedProducts: async (storeId) => {
+    const res = await fetch(`/api/storeFinishedProducts/${storeId}`);
+    const { ok, data } = await normalize(res);
   },
 };
 

@@ -18,6 +18,8 @@ import HomeDashboard from "./pages/HomeDashboard";
 import "./App.css";
 import Categories from "./pages/Categories";
 import CategoryDetail from "./pages/CategoryDetail";
+import EditCategory from "./pages/EditCategory";
+import ItemEditModal from "./components/ItemEditModal";
 
 function App() {
   return (
@@ -43,6 +45,8 @@ function App() {
           <Route path="/alerts" element={<StoreAlerts />} />
           <Route path="/waste-cost" element={<WasteCost />} />
           <Route path="/categories/:id" element={<CategoryDetail />} />
+          <Route path="/categories/:id/edit" element={<EditCategory />} />
+          <Route path="/items/edit/:itemId" element={<ItemEditModal />} />
         </Routes>
       </div>
     </div>

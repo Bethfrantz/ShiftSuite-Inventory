@@ -1,5 +1,6 @@
 import { useState } from "react";
-import styles from "../styles/modals/BulkImportModal.module.css";
+import modalStyles from "../styles/modals/Modal.module.css";
+import styles from "../styles/modals/CategoryModal.module.css";
 
 export default function BulkImportModal({ onClose, onUpload }) {
   const [file, setFile] = useState(null);
@@ -28,37 +29,51 @@ export default function BulkImportModal({ onClose, onUpload }) {
   }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-box">
-        <h2>Bulk Import Items (CSV)</h2>
-
-        <input type="file" accept=".csv" onChange={handleFileChange} />
-
-        {error && <p className="error-text">{error}</p>}
-
-        {preview.length > 0 && (
-          <div className="csv-preview">
-            <h3>Preview</h3>
-            <table>
-              <tbody>
-                {preview.map((row, idx) => (
-                  <tr key={idx}>
-                    {row.map((col, cidx) => (
-                      <td key={cidx}>{col}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <div className="modal-actions">
-          <button className="modal-save" onClick={handleUpload}>
-            Upload CSV
+    <div className={modalStyles.modalOverlay}>
+      <div className={modalStyles.modalBox}>
+        <div className={modalStyles.modalHeader}>
+          <h2>Bulk Import Items (CSV)</h2>
+          <button className={modalStyles.modalCloseButton} onClick={onClose}>
+            Close
           </button>
-          <button className="modal-cancel" onClick={onClose}>
+        </div>
+
+        <div className={modalStyles.modalBody}>
+          <label className={styles.modalLabel}>Select CSV File</label>
+          <input
+            className={styles.modalInput}
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+          />
+
+          {error && <p className={styles.errorText}>{error}</p>}
+
+          {preview.length > 0 && (
+            <div className={styles.csvPreview}>
+              <h3>Preview</h3>
+              <table>
+                <tbody>
+                  {preview.map((row, idx) => (
+                    <tr key={idx}>
+                      {row.map((col, cidx) => (
+                        <td key={cidx}>{col}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.modalActions}>
+          <button className={styles.modalCancel} onClick={onClose}>
             Cancel
+          </button>
+
+          <button className={styles.modalSave} onClick={handleUpload}>
+            Upload CSV
           </button>
         </div>
       </div>

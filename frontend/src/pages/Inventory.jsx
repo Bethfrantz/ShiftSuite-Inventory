@@ -12,6 +12,16 @@ export default function Inventory() {
   const [vendorFilter, setVendorFilter] = useState("");
   const [parFilter, setParFilter] = useState("");
   const [stores, setStores] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  async function loadCategories() {
+    const data = await API.getCategories();
+    setCategories(Array.isArray(data) ? data : []); // <-- safe fallback
+  }
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   async function loadItems() {
     if (!storeId) return;
@@ -45,7 +55,7 @@ export default function Inventory() {
       item.barcode?.toLowerCase().includes(search.toLowerCase());
 
     const matchesCategory =
-      categoryFilter === "" || item.categoryPhotoUrl === categoryFilter;
+      categoryFilter === "" || item.categoryId === categoryFilter;
 
     const matchesVendor = vendorFilter === "" || item.vendor === vendorFilter;
 
@@ -109,13 +119,11 @@ export default function Inventory() {
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
           <option value="">All Categories</option>
-          {[...new Set(items.map((i) => i.categoryPhotoUrl))].map(
-            (cat, idx) => (
-              <option key={idx} value={cat}>
-                Category {idx + 1}
-              </option>
-            ),
-          )}
+          {categories.map((cat) => (
+            <option key={cat._id} value={cat._id}>
+              {cat.name}
+            </option>
+          ))}
         </select>
 
         {/* Vendor Filter */}

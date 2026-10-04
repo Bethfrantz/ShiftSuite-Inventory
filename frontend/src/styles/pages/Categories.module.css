@@ -1,4 +1,4 @@
-/* PAGE WRAPPER */
+/* ---------------- PAGE WRAPPER ---------------- */
 .categoriesPage {
   max-width: 1200px;
   margin: 0 auto;
@@ -7,14 +7,14 @@
   font-family: sans-serif;
 }
 
-/* PAGE TITLE */
+/* ---------------- PAGE TITLE ---------------- */
 .categoriesPage h1 {
   font-size: 32px;
   font-weight: 600;
   margin-bottom: var(--space-24);
 }
 
-/* CONTROLS */
+/* ---------------- CONTROLS ---------------- */
 .categoriesControls {
   display: flex;
   gap: var(--space-16);
@@ -49,14 +49,15 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* GRID */
-.categoriesGrid {
+/* ---------------- GRID (THIS IS THE ONE YOUR JSX USES) ---------------- */
+.categoryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-24);
+  margin-top: var(--space-24);
 }
 
-/* CATEGORY CARD */
+/* ---------------- CATEGORY CARD ---------------- */
 .categoryCard {
   background: var(--color-background);
   border: 2px solid var(--elmos-red);
@@ -66,6 +67,7 @@
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
+  cursor: pointer;
 }
 
 .categoryCard:hover {
@@ -73,7 +75,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* PHOTO */
+/* ---------------- PHOTO ---------------- */
 .categoryPhoto {
   width: 100%;
   height: 160px;
@@ -94,15 +96,22 @@
   font-weight: 600;
 }
 
-/* ACTIONS */
+/* ---------------- DESCRIPTION ---------------- */
+.categoryDescription {
+  margin: 8px 0;
+  color: var(--color-text-muted);
+}
+
+/* ---------------- ACTIONS ---------------- */
 .categoryActions {
   display: flex;
   gap: var(--space-12);
   margin-top: var(--space-16);
 }
 
-.editCategoryButton,
-.deleteCategoryButton {
+.editCategoryButton {
+  background: var(--elmos-yellow);
+  border: 2px solid var(--elmos-red);
   padding: var(--space-8) var(--space-16);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -111,67 +120,18 @@
   transition: transform 0.15s ease;
 }
 
-.editCategoryButton {
-  background: var(--elmos-yellow);
-  border: 2px solid var(--elmos-red);
-}
-
 .deleteCategoryButton {
   background: var(--elmos-red);
   color: var(--elmos-gray);
-  border: none;
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.15s ease;
 }
 
 .editCategoryButton:hover,
 .deleteCategoryButton:hover {
   transform: translateY(-2px);
-}
-.categoryGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.categoryCard {
-  background: var(--color-background);
-  border: 2px solid var(--elmos-red);
-  border-radius: var(--radius-md);
-  padding: var(--space-20);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.categoryPhoto {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  margin-bottom: var(--space-16);
-}
-
-.categoryDescription {
-  margin: 8px 0;
-  color: var(--color-text-muted);
-}
-
-.categoryActions {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.editCategoryButton {
-  background: var(--elmos-yellow);
-  border: 2px solid var(--elmos-red);
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.deleteCategoryButton {
-  background: var(--elmos-red);
-  color: var(--elmos-gray);
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
 }

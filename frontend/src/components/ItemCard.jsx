@@ -6,8 +6,8 @@ export default function ItemCard({ item }) {
     <div className={styles.card}>
       {/* Photo */}
       <div className={styles.photoWrapper}>
-        {item.photo ? (
-          <img src={item.photo} alt={item.name} className={styles.photo} />
+        {item.photoUrl ? (
+          <img src={item.photoUrl} alt={item.name} className={styles.photo} />
         ) : (
           <div className={styles.placeholder}>No Photo</div>
         )}
@@ -22,9 +22,9 @@ export default function ItemCard({ item }) {
 
         {/* Category */}
         <div className={styles.categoryRow}>
-          {item.categoryPhoto ? (
+          {item.categoryPhotoUrl ? (
             <img
-              src={item.categoryPhoto}
+              src={item.categoryPhotoUrl}
               alt={item.category}
               className={styles.categoryPhoto}
             />
@@ -40,10 +40,7 @@ export default function ItemCard({ item }) {
             View
           </Link>
 
-          <button
-            className={styles.editButton}
-            onClick={() => item.onEdit(item)}
-          >
+          <button className={styles.editButton} onClick={() => onEdit(item)}>
             Edit
           </button>
         </div>
