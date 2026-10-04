@@ -107,21 +107,7 @@ MONGO_URI=mongodb://localhost:27017/inventory
 
 MIT License
 
-## Summary
-This project demonstrates:
-
-*Full‑stack development
-
-*Clean UI/UX
-
-*Enterprise‑grade modal system
-
-*MongoDB data modeling
-
-*Professional React architecture
-
-*Production‑ready polish
-
-It is a strong portfolio piece showcasing real‑world, maintainable system design.
+Summary
+This project demonstrates practical full‑stack development skills through a complete inventory management system built with React, Node.js/Express, and MongoDB. It includes a clean and responsive user interface, modular architecture, and production‑ready features such as React portals, form validation, modal animations, and normalized API responses. The system supports multi‑location inventory, category and item management, vendor tracking, par levels, and photo‑based organization. It reflects an understanding of real‑world application design, maintainability, and user experience, making it a strong portfolio example of building reliable, scalable, and professional software.
 ---
 
