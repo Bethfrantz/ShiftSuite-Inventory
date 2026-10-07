@@ -57,18 +57,18 @@ router.get("/:storeId", async (req, res, next) => {
     const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     // Historical usage
-    const usage7 = await Usage.find({ storeId, createdAt: { $gte: since7 } });
-    const usage14 = await Usage.find({ storeId, createdAt: { $gte: since14 } });
-    const usage30 = await Usage.find({ storeId, createdAt: { $gte: since30 } });
+    const usage7 = await Usage.find({ storeId, timestamp: { $gte: since7 } });
+    const usage14 = await Usage.find({ storeId, timestamp: { $gte: since14 } });
+    const usage30 = await Usage.find({ storeId, timestamp: { $gte: since30 } });
 
     // Historical waste
-    const waste7 = await Waste.find({ storeId, createdAt: { $gte: since7 } });
-    const waste14 = await Waste.find({ storeId, createdAt: { $gte: since14 } });
-    const waste30 = await Waste.find({ storeId, createdAt: { $gte: since30 } });
+    const waste7 = await Waste.find({ storeId, timestamp: { $gte: since7 } });
+    const waste14 = await Waste.find({ storeId, timestamp: { $gte: since14 } });
+    const waste30 = await Waste.find({ storeId, timestamp: { $gte: since30 } });
 
     // Historical shrinkage snapshots
     const snapshots30 = await InventorySnapshot.find({ storeId })
-      .sort({ createdAt: -1 })
+      .sort({ timestamp: -1 })
       .limit(4)
       .populate("items.itemId");
 
@@ -77,7 +77,7 @@ router.get("/:storeId", async (req, res, next) => {
     ------------------------------------------------------- */
     const usageRecords = await Usage.find({
       storeId,
-      createdAt: { $gte: since },
+      timestamp: { $gte: since },
     }).populate("itemId");
 
     const usageSummary = {};
@@ -85,15 +85,15 @@ router.get("/:storeId", async (req, res, next) => {
       const item = u.itemId;
       if (!item) continue;
 
-      if (!usageSummary[item._id]) {
-        usageSummary[item._id] = {
+      if (!usageSummary[item._id.toString()]) {
+        usageSummary[item._id.toString()] = {
           itemId: item._id,
           name: item.name,
           quantity: 0,
         };
       }
 
-      usageSummary[item._id].quantity += u.quantity;
+      usageSummary[item._id.toString()].quantity += u.quantityUsed;
     }
 
     /* -------------------------------------------------------
@@ -101,21 +101,34 @@ router.get("/:storeId", async (req, res, next) => {
     ------------------------------------------------------- */
     const wasteRecords = await Waste.find({
       storeId,
-      createdAt: { $gte: since },
+      timestamp: { $gte: since },
     })
       .populate("rawItemId")
       .populate("finishedProductId");
 
     const wasteSummary = {};
     for (const w of wasteRecords) {
-      const source = w.type === "raw" ? w.rawItemId : w.finishedProductId;
+      let source = null;
+
+      if (w.type === "raw") {
+        source = w.rawItemId;
+      } else if (w.type === "finished") {
+        // finishedProductId has no price or category — map to its ingredients
+        const fp = await FinishedProduct.findById(w.finishedProductId).populate(
+          "ingredients.itemId",
+        );
+        if (fp && fp.ingredients.length > 0) {
+          source = fp.ingredients[0].itemId; // use first ingredient as representative
+        }
+      }
+
       if (!source) continue;
 
       const key = source._id;
       const name = source.name;
 
-      if (!wasteSummary[key]) {
-        wasteSummary[key] = {
+      if (!wasteSummary[key.toString()]) {
+        wasteSummary[key.toString()] = {
           id: key,
           name,
           type: w.type,
@@ -123,14 +136,14 @@ router.get("/:storeId", async (req, res, next) => {
         };
       }
 
-      wasteSummary[key].quantity += w.quantity;
+      wasteSummary[key.toString()].quantity += w.quantity;
     }
 
     /* -------------------------------------------------------
        SHRINKAGE SUMMARY
     ------------------------------------------------------- */
     const snapshots = await InventorySnapshot.find({ storeId })
-      .sort({ createdAt: -1 })
+      .sort({ timestamp: -1 })
       .limit(2)
       .populate("items.itemId");
 
@@ -147,7 +160,7 @@ router.get("/:storeId", async (req, res, next) => {
           if (!itemId) return null;
 
           const itemB = (snapB.items || []).find(
-            (i) => i.itemId?._id?.toString() === itemId.toString(),
+            (i) => i.itemId && i.itemId._id.toString() === itemId.toString(),
           );
 
           const qtyA = itemA.quantity ?? 0;
@@ -165,17 +178,32 @@ router.get("/:storeId", async (req, res, next) => {
     /* -------------------------------------------------------
        INVENTORY SUMMARY
     ------------------------------------------------------- */
+    /* -------------------------------------------------------
+       INVENTORY SUMMARY
+    ------------------------------------------------------- */
     const items = await Item.find().populate("categoryId");
-    const counts = await InventoryCount.find({ storeId });
+
+    // Get latest counts per item
+    const counts = await InventoryCount.aggregate([
+      { $match: { storeId } },
+      { $sort: { timestamp: -1 } },
+      {
+        $group: {
+          _id: "$itemId",
+          quantity: { $first: "$quantity" },
+          timestamp: { $first: "$timestamp" },
+        },
+      },
+    ]);
 
     const inventorySummary = items.map((item) => {
       const parEntry = item.parLevels?.find(
         (p) => p.storeId?.toString() === storeId,
       );
-      const par = parEntry?.par ?? 0;
+      const par = Number(parEntry?.par) || 0;
 
       const countEntry = counts.find(
-        (c) => c.itemId.toString() === item._id.toString(),
+        (c) => c._id.toString() === item._id.toString(),
       );
       const currentQuantity = countEntry?.quantity ?? 0;
 
@@ -333,26 +361,27 @@ router.get("/:storeId", async (req, res, next) => {
 
     const kpiHistory = {
       usageEfficiency: {
-        "7d": usage7.reduce((sum, u) => sum + u.quantity, 0),
-        "14d": usage14.reduce((sum, u) => sum + u.quantity, 0),
-        "30d": usage30.reduce((sum, u) => sum + u.quantity, 0),
+        "7d": usage7.reduce((sum, u) => sum + (u.quantityUsed ?? 0), 0),
+        "14d": usage14.reduce((sum, u) => sum + (u.quantityUsed ?? 0), 0),
+        "30d": usage30.reduce((sum, u) => sum + (u.quantityUsed ?? 0), 0),
       },
 
       wasteRate: {
-        "7d": waste7.reduce((sum, w) => sum + w.quantity, 0),
-        "14d": waste14.reduce((sum, w) => sum + w.quantity, 0),
-        "30d": waste30.reduce((sum, w) => sum + w.quantity, 0),
+        "7d": waste7.reduce((sum, w) => sum + (w.quantity ?? 0), 0),
+        "14d": waste14.reduce((sum, w) => sum + (w.quantity ?? 0), 0),
+        "30d": waste30.reduce((sum, w) => sum + (w.quantity ?? 0), 0),
       },
 
       shrinkageRate: {
-        "7d": shrinkageSummary.reduce((sum, s) => sum + s.shrinkage, 0),
+        "7d": shrinkageSummary.reduce((sum, s) => sum + (s.shrinkage ?? 0), 0),
 
         "14d":
           snapshots30.length >= 3
             ? snapshots30[2].items.reduce((sum, itemA) => {
                 const itemB = snapshots30[1].items.find(
                   (i) =>
-                    i.itemId?._id?.toString() === itemA.itemId?._id?.toString(),
+                    i.itemId &&
+                    i.itemId._id.toString() === itemA.itemId?._id?.toString(),
                 );
                 return sum + (itemA.quantity - (itemB?.quantity ?? 0));
               }, 0)
@@ -363,7 +392,8 @@ router.get("/:storeId", async (req, res, next) => {
             ? snapshots30[3].items.reduce((sum, itemA) => {
                 const itemB = snapshots30[1].items.find(
                   (i) =>
-                    i.itemId?._id?.toString() === itemA.itemId?._id?.toString(),
+                    i.itemId &&
+                    i.itemId._id.toString() === itemA.itemId?._id?.toString(),
                 );
                 return sum + (itemA.quantity - (itemB?.quantity ?? 0));
               }, 0)
@@ -457,12 +487,12 @@ router.get("/:storeId", async (req, res, next) => {
           usageEfficiency: { score: kpiHistoryScores.usageEfficiency["7d"] },
           wasteRate: { score: kpiHistoryScores.wasteRate["7d"] },
           shrinkageRate: { score: kpiHistoryScores.shrinkageRate["7d"] },
-          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["7d"] ?? 80 },
-          staffingAlignment: {
-            score: kpiHistoryScores.staffingAlignment?.["7d"] ?? 80,
-          },
+
+          // FIXED: use actual KPI values (not nonexistent history)
+          prepAccuracy: { score: kpis.prepAccuracy.score },
+          staffingAlignment: { score: kpis.staffingAlignment.score },
           replenishmentCompliance: {
-            score: kpiHistoryScores.replenishmentCompliance?.["7d"] ?? 80,
+            score: kpis.replenishmentCompliance.score,
           },
         },
         weights,
@@ -473,12 +503,12 @@ router.get("/:storeId", async (req, res, next) => {
           usageEfficiency: { score: kpiHistoryScores.usageEfficiency["14d"] },
           wasteRate: { score: kpiHistoryScores.wasteRate["14d"] },
           shrinkageRate: { score: kpiHistoryScores.shrinkageRate["14d"] },
-          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["14d"] ?? 75 },
-          staffingAlignment: {
-            score: kpiHistoryScores.staffingAlignment?.["14d"] ?? 75,
-          },
+
+          // FIXED
+          prepAccuracy: { score: kpis.prepAccuracy.score },
+          staffingAlignment: { score: kpis.staffingAlignment.score },
           replenishmentCompliance: {
-            score: kpiHistoryScores.replenishmentCompliance?.["14d"] ?? 75,
+            score: kpis.replenishmentCompliance.score,
           },
         },
         weights,
@@ -489,12 +519,12 @@ router.get("/:storeId", async (req, res, next) => {
           usageEfficiency: { score: kpiHistoryScores.usageEfficiency["30d"] },
           wasteRate: { score: kpiHistoryScores.wasteRate["30d"] },
           shrinkageRate: { score: kpiHistoryScores.shrinkageRate["30d"] },
-          prepAccuracy: { score: kpiHistoryScores.prepAccuracy?.["30d"] ?? 70 },
-          staffingAlignment: {
-            score: kpiHistoryScores.staffingAlignment?.["30d"] ?? 70,
-          },
+
+          // FIXED
+          prepAccuracy: { score: kpis.prepAccuracy.score },
+          staffingAlignment: { score: kpis.staffingAlignment.score },
           replenishmentCompliance: {
-            score: kpiHistoryScores.replenishmentCompliance?.["30d"] ?? 70,
+            score: kpis.replenishmentCompliance.score,
           },
         },
         weights,
@@ -565,7 +595,7 @@ router.get("/:storeId", async (req, res, next) => {
         score: storeScoreHistory["30d"],
         type: "history",
         color:
-          storeScoreHistory["30d"] >= storeScoreHistory["7d"] ? "green" : "red",
+          storeScoreHistory["7d"] >= storeScoreHistory["30d"] ? "green" : "red",
       },
       {
         label: "14d",
@@ -596,12 +626,10 @@ router.get("/:storeId", async (req, res, next) => {
         type: "forecast",
         color: "purple",
       },
-
-      // Forecast 30d
       {
         label: "Forecast 30d",
-        score: storeScoreForecast?.["30d"]?.center ?? 0,
-        band: storeScoreForecast?.["30d"]?.band ?? null,
+        score: storeScoreForecast["30d"].center,
+        band: storeScoreForecast["30d"].band,
         type: "forecast",
         color: "purple",
       },
@@ -666,11 +694,11 @@ router.get("/:storeId", async (req, res, next) => {
 
     const wasteAvgScore = (waste7Score + waste14Score + waste30Score) / 3;
 
-    if (isDeviation(waste7, wasteAvg)) {
+    if (isDeviation(waste7Score, wasteAvgScore)) {
       kpiAnomalies.push({
         kpi: "Waste Rate",
         type: "Abnormal Waste",
-        detail: `Waste is ${(((waste7 - wasteAvg) / wasteAvg) * 100).toFixed(1)}% off expected levels.`,
+        detail: `Waste is ${(((waste7Score - wasteAvgScore) / wasteAvgScore) * 100).toFixed(1)}% off expected levels.`,
         severity: "high",
       });
     }
@@ -682,7 +710,7 @@ router.get("/:storeId", async (req, res, next) => {
         (kpiHistory.shrinkageRate?.["30d"] ?? 0)) /
       2;
 
-    if (isDeviation(shrink7, shrinkAvg)) {
+    if (shrinkAvg !== 0 && isDeviation(shrink7, shrinkAvg)) {
       kpiAnomalies.push({
         kpi: "Shrinkage Rate",
         type: "Abnormal Shrinkage",
@@ -694,7 +722,9 @@ router.get("/:storeId", async (req, res, next) => {
     // Store score anomaly
     const score7 = storeScoreHistory?.["7d"] ?? 0;
     const score30 = storeScoreHistory?.["30d"] ?? 0;
-    const scoreChange = pctChange(score30, score7);
+
+    // FIXED: correct pctChange direction
+    const scoreChange = pctChange(score7, score30);
 
     if (isDrop(scoreChange, -10)) {
       kpiAnomalies.push({
@@ -834,17 +864,17 @@ router.get("/:storeId", async (req, res, next) => {
 
       // ⭐ ALWAYS return arrays/objects
       kpiHistory: kpiHistory || {},
-      kpiHistoryScores: kpiHistoryScores || [],
-      kpiTrends: kpiTrends || [],
-      kpiTrendCharts: kpiTrendCharts || [],
+      kpiHistoryScores: kpiHistoryScores || {},
+      kpiTrends: kpiTrends || {},
+      kpiTrendCharts: kpiTrendCharts || {},
 
-      storeScoreHistory: storeScoreHistory || [],
+      storeScoreHistory: storeScoreHistory || {},
       storeScoreTrend: storeScoreTrend || {},
       storeScoreTrendChart: storeScoreTrendChart || [],
 
       kpiAnomalies: kpiAnomalies || [],
 
-      storeScoreForecast: storeScoreForecast || [],
+      storeScoreForecast: storeScoreForecast || {},
       storeScoreForecastChart: storeScoreForecastChart || [],
       storeScoreForecastSlope: storeScoreForecastSlope || {},
 
@@ -852,6 +882,7 @@ router.get("/:storeId", async (req, res, next) => {
     });
   } catch (err) {
     console.error("Dashboard error:", err);
+    next(err);
   }
 });
 

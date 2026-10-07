@@ -132,5 +132,153 @@ router.post("/", async (req, res, next) => {
     next(err);
   }
 });
+/* -------------------------------------------------------
+   WASTE REPORT
+   GET /waste/report?storeId=xxx&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+------------------------------------------------------- */
+router.get("/report", async (req, res, next) => {
+  try {
+    const { storeId, startDate, endDate } = req.query;
+
+    if (!storeId) throwError("storeId is required", 400);
+
+    // Default: last 7 days
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const end = endDate ? new Date(endDate) : new Date();
+
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    /* -------------------------------------------------------
+       1. Pull waste records for store + date range
+    ------------------------------------------------------- */
+    const wasteRecords = await Waste.find({
+      storeId,
+      timestamp: { $gte: start, $lte: end },
+    }).populate("rawItemId");
+
+    if (!wasteRecords.length) {
+      return res.json({
+        requestId: req.requestId,
+        storeId,
+        startDate: start,
+        endDate: end,
+        items: [],
+        categories: [],
+        reasons: [],
+        totals: {
+          totalWasteQuantity: 0,
+          totalWasteCost: 0,
+        },
+      });
+    }
+
+    /* -------------------------------------------------------
+       2. Group waste by item
+    ------------------------------------------------------- */
+    const itemMap = new Map();
+
+    for (const w of wasteRecords) {
+      const item = w.rawItemId;
+      if (!item) continue;
+
+      const id = item._id.toString();
+      const price = item.currentPrice || 0;
+
+      if (!itemMap.has(id)) {
+        itemMap.set(id, {
+          itemId: id,
+          name: item.name,
+          categoryId: item.categoryId,
+          quantity: 0,
+          cost: 0,
+        });
+      }
+
+      const entry = itemMap.get(id);
+      entry.quantity += w.quantity;
+      entry.cost += w.quantity * price;
+    }
+
+    const items = Array.from(itemMap.values());
+
+    /* -------------------------------------------------------
+       3. Group waste by category
+    ------------------------------------------------------- */
+    const categoryIds = [...new Set(items.map((i) => i.categoryId))];
+    const categories = await Category.find({ _id: { $in: categoryIds } });
+
+    const categoryMap = new Map();
+
+    for (const item of items) {
+      const catId = item.categoryId.toString();
+      const cat = categories.find((c) => c._id.toString() === catId);
+
+      if (!categoryMap.has(catId)) {
+        categoryMap.set(catId, {
+          categoryId: catId,
+          categoryName: cat ? cat.name : "Unknown Category",
+          quantity: 0,
+          cost: 0,
+        });
+      }
+
+      const entry = categoryMap.get(catId);
+      entry.quantity += item.quantity;
+      entry.cost += item.cost;
+    }
+
+    const categorySummary = Array.from(categoryMap.values());
+
+    /* -------------------------------------------------------
+       4. Waste reasons breakdown
+    ------------------------------------------------------- */
+    const reasonMap = new Map();
+
+    for (const w of wasteRecords) {
+      const reason = w.reason || "Unspecified";
+
+      if (!reasonMap.has(reason)) {
+        reasonMap.set(reason, {
+          reason,
+          quantity: 0,
+        });
+      }
+
+      const entry = reasonMap.get(reason);
+      entry.quantity += w.quantity;
+    }
+
+    const reasons = Array.from(reasonMap.values());
+
+    /* -------------------------------------------------------
+       5. Totals
+    ------------------------------------------------------- */
+    const totalWasteQuantity = items.reduce((sum, i) => sum + i.quantity, 0);
+    const totalWasteCost = items.reduce((sum, i) => sum + i.cost, 0);
+
+    /* -------------------------------------------------------
+       6. Final response
+    ------------------------------------------------------- */
+    res.json({
+      requestId: req.requestId,
+      storeId,
+      startDate: start,
+      endDate: end,
+      items,
+      categories: categorySummary,
+      reasons,
+      totals: {
+        totalWasteQuantity,
+        totalWasteCost,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;
