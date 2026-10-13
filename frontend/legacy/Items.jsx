@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import API from "../api/api";
+import API from "../src/api/api";
 import styles from "../styles/pages/Items.module.css";
 import { useNavigate } from "react-router-dom";
 
-import ItemEditModal from "../components/ItemEditModal";
-import AddItemModal from "../components/AddItemModal";
-import DeleteItemModal from "../components/DeleteItemModal";
-import BulkImportModal from "../components/BulkImportModal";
+import ItemEditModal from "../src/components/ItemEditModal";
+import AddItemModal from "../src/components/AddItemModal";
+import DeleteItemModal from "../src/components/DeleteItemModal";
+import BulkImportModal from "../src/components/BulkImportModal";
 
 export default function Items() {
   const [items, setItems] = useState([]);

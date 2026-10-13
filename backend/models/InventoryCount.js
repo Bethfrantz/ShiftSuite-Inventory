@@ -1,24 +1,32 @@
 const mongoose = require("mongoose");
 
-const InventoryCountSchema = new mongoose.Schema({
+const InventoryCountSchema = new mongoose.Schema(
+  {
     storeId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Store",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: true,
     },
     itemId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Item",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Item",
+      required: true,
     },
     quantity: {
-        type: Number,
-        required: true
+      type: Number,
+      required: true,
     },
     notes: {
-        type: String,
-        default: ""
-    }
-}, { timestamps: true });
+      type: String,
+      default: "",
+    },
+    source: {
+      type: String,
+      enum: ["manual", "scan", "invoice", "adjustment"],
+      default: "manual",
+    },
+  },
+  { timestamps: true },
+);
 
 module.exports = mongoose.model("InventoryCount", InventoryCountSchema);

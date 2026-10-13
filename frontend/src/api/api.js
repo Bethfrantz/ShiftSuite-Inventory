@@ -290,6 +290,74 @@ const API = {
     const res = await fetch(`/api/storeFinishedProducts/${storeId}`);
     const { ok, data } = await normalize(res);
   },
+  /* ---------------- Inventory VARIANCE ---------------- */
+  getInventoryVariance: async (storeId) => {
+    const res = await fetch(`/api/inventoryVariance/${storeId}`);
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.variance)) {
+      return [];
+    }
+
+    return data.variance;
+  },
+  /* ---------------- Inventory Anamalies ---------------- */
+  getInventoryAnomalies: async (storeId) => {
+    const res = await fetch(`/api/inventoryAnomalies/${storeId}`);
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.anomalies)) {
+      return [];
+    }
+
+    return data.anomalies;
+  },
+  /* ---------------- Inventory Forecast ---------------- */
+  getInventoryForecast: async (storeId) => {
+    const res = await fetch(`/api/inventoryForecast/${storeId}`);
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.forecast)) {
+      return [];
+    }
+
+    return data.forecast;
+  },
+  /* ---------------- Inventory Cost Forecast ---------------- */
+  getInventoryCostForecast: async (storeId) => {
+    const res = await fetch(`/api/inventoryCostForecast/${storeId}`);
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.forecast)) {
+      return [];
+    }
+
+    return data.forecast;
+  },
+  /* ---------------- Inventory Vendor Delivery Forecast ---------------- */
+  getVendorDeliveryForecast: async (storeId) => {
+    const res = await fetch(
+      `/api/vendorDeliveryForecast/${storeId}/vendorForecast`,
+    );
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !Array.isArray(data.forecast)) {
+      return [];
+    }
+
+    return data.forecast;
+  },
+  /* ---------------- Inventory Order Guide ---------------- */
+  getPurchaseOrders: async (storeId) => {
+    const res = await fetch(`/api/purchaseOrders/${storeId}`);
+    const { ok, data } = await normalize(res);
+
+    if (!ok || !data || !data.purchaseOrders) {
+      return {};
+    }
+
+    return data.purchaseOrders;
+  },
 };
 
 export default API;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import API from "../api/api";
+import API from "../src/api/api";
 import styles from "../styles/pages/Reports.module.css";
 
 export default function Reports() {

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-import VendorCostTrendChart from "../../components/vendor/VendorCostTrendChart";
-import VendorPriceVolatilityChart from "../../components/vendor/VendorPriceVolatilityChart";
-import VendorReliabilityScore from "../../components/vendor/VendorReliabilityScore";
-import VendorComparisonChart from "../../components/vendor/VendorComparisonChart";
+import VendorCostTrendChart from "../VendorCostTrendChart";
+import VendorPriceVolatilityChart from "../VendorPriceVolatilityChart";
+import VendorReliabilityScore from "../VendorReliabilityScore";
+import VendorComparisonChart from "../../src/components/vendor/VendorComparisonChart";
 import VendorCostSpikeChart from "../../components/vendor/VendorCostSpikeChart";
 
 export default function VendorInvoiceAnalytics() {
@@ -82,6 +82,10 @@ export default function VendorInvoiceAnalytics() {
         costTrend,
         priceHistory,
         vendorComparison,
+        vendorCostTrend,
+        vendorForecast,
+        vendorRiskScore,
+        vendorContractOptimization,
       });
     } catch (err) {
       console.error("Vendor analytics error:", err);
@@ -122,6 +126,91 @@ export default function VendorInvoiceAnalytics() {
           <VendorReliabilityScore invoices={invoices} />
 
           <VendorComparisonChart data={analytics.vendorComparison} />
+
+          <div
+            style={{
+              marginTop: "1.5rem",
+              padding: "1rem",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+            }}
+          >
+            <h2>Vendor Risk Score</h2>
+
+            <p style={{ fontSize: "2rem", fontWeight: "bold" }}>
+              {analytics.vendorRiskScore[selectedVendor]} / 100
+            </p>
+
+            <p>
+              <strong>Risk Level:</strong>{" "}
+              {analytics.vendorRiskScore[selectedVendor] >= 80
+                ? "High Risk"
+                : analytics.vendorRiskScore[selectedVendor] >= 50
+                  ? "Medium Risk"
+                  : "Low Risk"}
+            </p>
+          </div>
+          <div
+            style={{
+              marginTop: "1.5rem",
+              padding: "1rem",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+            }}
+          >
+            <h2>Vendor Contract Optimization</h2>
+
+            {analytics.vendorContractOptimization &&
+              analytics.vendorContractOptimization[selectedVendor] && (
+                <>
+                  <p>
+                    <strong>Total Spend:</strong> $
+                    {analytics.vendorContractOptimization[
+                      selectedVendor
+                    ].totalCost.toFixed(2)}
+                  </p>
+                  <p>
+                    <strong>Waste %:</strong>{" "}
+                    {
+                      analytics.vendorContractOptimization[selectedVendor]
+                        .wastePct
+                    }
+                    %
+                  </p>
+                  <p>
+                    <strong>Forecast 30d Change:</strong>{" "}
+                    {
+                      analytics.vendorContractOptimization[selectedVendor]
+                        .forecastChangePct
+                    }
+                    %
+                  </p>
+                  <p>
+                    <strong>Risk Score:</strong>{" "}
+                    {analytics.vendorContractOptimization[selectedVendor].risk}{" "}
+                    / 100
+                  </p>
+
+                  <h3>Suggested Actions</h3>
+                  <ul>
+                    {analytics.vendorContractOptimization[
+                      selectedVendor
+                    ].suggestions.map((s, idx) => (
+                      <li key={idx}>{s}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+          </div>
+          <button
+            style={{ marginTop: "1rem", padding: "0.5rem 1rem" }}
+            onClick={() => {
+              const url = `/api/vendor-contract-report/${storeId}/${selectedVendor}/report`;
+              window.open(url, "_blank");
+            }}
+          >
+            Download Contract Optimization Report
+          </button>
 
           <h2>Invoices</h2>
           <table border="1" cellPadding="8" style={{ width: "100%" }}>

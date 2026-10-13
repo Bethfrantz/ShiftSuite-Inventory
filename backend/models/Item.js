@@ -49,6 +49,11 @@ const ItemSchema = new mongoose.Schema({
   vendorItemNumber: { type: String, default: "" },
 
   active: { type: Boolean, default: true },
+  unitCost: { type: Number, default: 0 },
+  deliveryLeadDays: { type: Number, default: 0 },
+  safetyStockDays: { type: Number, default: 0 },
+  barcodeImageUrl: { type: String, default: "" },
+  preferredVendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
 });
 
 module.exports = mongoose.model("Item", ItemSchema);

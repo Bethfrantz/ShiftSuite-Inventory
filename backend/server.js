@@ -3,9 +3,15 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const app = express();
+const app = express(); // <-- MUST come before any app.use()
 app.use(cors());
 app.use(express.json());
+
+/* -------------------------------------------------------
+   EXPORT ROUTES (place here)
+------------------------------------------------------- */
+const purchaseOrdersExportRoutes = require("./routes/purchaseOrdersExport");
+app.use("/api/purchaseOrdersExport", purchaseOrdersExportRoutes);
 
 /* -------------------------------------------------------
    CORE ENTITIES
@@ -55,7 +61,7 @@ app.use("/api/batchPrepCalendar", require("./routes/batchPrepCalendar"));
 app.use("/api/usageCharts", require("./routes/usageCharts"));
 app.use("/api/categoryAnalytics", require("./routes/categoryAnalytics"));
 app.use("/api/vendorAnalytics", require("./routes/vendorAnalytics"));
-app.use("/api/storeDashboard", require("./routes/storeDashboard")); // FIXED: only once
+app.use("/api/storeDashboard", require("./routes/storeDashboard"));
 app.use("/api/districtDashboard", require("./routes/districtDashboard"));
 
 /* -------------------------------------------------------
@@ -79,16 +85,25 @@ app.use("/api/gmMonthlyReport", require("./routes/gmMonthlyReport"));
 app.use("/api/alerts", require("./routes/alerts"));
 
 /* -------------------------------------------------------
+Print
+------------------------------------------------------- */
+const res = await fetch("/api/print/orders", {
+  method: "POST",
+  body: JSON.stringify(po),
+});
+const blob = await res.blob();
+downloadFile(blob, "purchase_order.pdf");
+
+app.use("/api/print/inventory", require("./routes/print/printInventory"));
+app.use("/api/print/invoices", require("./routes/print/printInvoices"));
+app.use("/api/print/orders", require("./routes/print/printOrder"));
+app.use("/api/print/reports", require("./routes/print/printReports"));
+
+/* -------------------------------------------------------
    middleware
 ------------------------------------------------------- */
 const errorHandler = require("./middleware/errorHandler");
 app.use(errorHandler);
-
-/* -------------------------------------------------------
-   store routes
-------------------------------------------------------- */
-const storeRoutes = require("./routes/storeRoutes");
-app.use("/api/stores", storeRoutes);
 
 /* -------------------------------------------------------
    DATABASE CONNECTION

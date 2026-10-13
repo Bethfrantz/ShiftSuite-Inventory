@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import API from "../api/api";
+import API from "../src/api/api";
 import styles from "../styles/pages/CountHistory.module.css";
 
 export default function CountHistory() {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import API from "../api/api";
+import API from "../src/api/api";
 import styles from "../styles/pages/EditCategory.module.css";
 
 export default function EditCategory() {

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import API from "../api/api";
+import API from "../src/api/api";
 import styles from "../styles/pages/ItemDetail.module.css";
-import ItemEditModal from "../components/ItemEditModal";
-import DeleteItemModal from "../components/DeleteItemModal";
+import ItemEditModal from "../src/components/ItemEditModal";
+import DeleteItemModal from "../src/components/DeleteItemModal";
 
 export default function ItemDetail() {
   const { itemId } = useParams();

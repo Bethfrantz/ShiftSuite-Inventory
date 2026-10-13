@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const PDFDocument = require("pdfkit");
 
-const Adjustment = require("../../models/Adjustment");
-const Item = require("../../models/Item");
-const Store = require("../../models/Store");
+const Adjustment = require("../models/Adjustment");
+const Item = require("../models/Item");
+const Store = require("../models/Store");
 
 // Print adjustment
 router.get("/:id", async (req, res) => {

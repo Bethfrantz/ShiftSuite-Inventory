@@ -3,9 +3,9 @@ const router = express.Router();
 const PDFDocument = require("pdfkit");
 const bwipjs = require("bwip-js");
 
-const Item = require("../../models/Item");
-const Store = require("../../models/Store");
-const Category = require("../../models/Category");
+const Item = require("../models/Item");
+const Store = require("../models/Store");
+const Category = require("../models/Category");
 
 // Print single item
 router.get("/item/:id", async (req, res) => {
