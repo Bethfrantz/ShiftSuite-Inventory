@@ -6,9 +6,10 @@ const bwipjs = require("bwip-js");
 const Item = require("../../models/Item");
 const InventoryCount = require("../../models/InventoryCount");
 const Store = require("../../models/Store");
+const { requireAuth } = require("../middleware/auth");
 
 // Print inventory sheet WITH barcodes
-router.get("/inventory-barcodes/:storeId", async (req, res) => {
+router.get("/inventory-barcodes/:storeId", requireAuth, async (req, res) => {
   try {
     const store = await Store.findById(req.params.storeId);
     if (!store) return res.status(404).json({ error: "Store not found" });

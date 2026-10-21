@@ -84,20 +84,21 @@ app.use("/api/gmMonthlyReport", require("./routes/gmMonthlyReport"));
 ------------------------------------------------------- */
 app.use("/api/alerts", require("./routes/alerts"));
 
-/* -------------------------------------------------------
-Print
-------------------------------------------------------- */
-const res = await fetch("/api/print/orders", {
-  method: "POST",
-  body: JSON.stringify(po),
-});
-const blob = await res.blob();
-downloadFile(blob, "purchase_order.pdf");
-
 app.use("/api/print/inventory", require("./routes/print/printInventory"));
 app.use("/api/print/invoices", require("./routes/print/printInvoices"));
 app.use("/api/print/orders", require("./routes/print/printOrder"));
 app.use("/api/print/reports", require("./routes/print/printReports"));
+
+/* -------------------------------------------------------
+   INVOICE SCAN
+------------------------------------------------------- */
+app.use("/api/invoices", require("./routes/invoices"));
+app.use("/api/invoiceScan", require("./routes/invoiceScan"));
+
+/* -------------------------------------------------------
+   AUTHENTICATION
+------------------------------------------------------- */
+app.use("/api/auth", require("./routes/auth"));
 
 /* -------------------------------------------------------
    middleware

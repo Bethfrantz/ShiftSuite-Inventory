@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Adjustment = require("../models/Adjustment");
 const InventoryCount = require("../models/InventoryCount");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -38,7 +39,7 @@ router.use((req, res, next) => {
 /* -------------------------------------------------------
    Create adjustment
 ------------------------------------------------------- */
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const adj = await Adjustment.create(req.body);
     res.json(adj);
@@ -50,7 +51,7 @@ router.post("/", async (req, res, next) => {
 /* -------------------------------------------------------
    Get adjustments for a store
 ------------------------------------------------------- */
-router.get("/store/:storeId", async (req, res, next) => {
+router.get("/store/:storeId", requireAuth, async (req, res, next) => {
   try {
     const adjustments = await Adjustment.find({
       storeId: req.params.storeId,
@@ -67,7 +68,7 @@ router.get("/store/:storeId", async (req, res, next) => {
 /* -------------------------------------------------------
    Get adjustments for an item
 ------------------------------------------------------- */
-router.get("/item/:itemId", async (req, res, next) => {
+router.get("/item/:itemId", requireAuth, async (req, res, next) => {
   try {
     const adjustments = await Adjustment.find({
       item: req.params.itemId,
@@ -84,7 +85,7 @@ router.get("/item/:itemId", async (req, res, next) => {
 /* -------------------------------------------------------
    Apply adjustment to inventory
 ------------------------------------------------------- */
-router.post("/apply", async (req, res, next) => {
+router.post("/apply", requireAuth, async (req, res, next) => {
   try {
     const { store, item, quantityChange } = req.body;
 

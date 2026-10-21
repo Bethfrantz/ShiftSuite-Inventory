@@ -6,6 +6,7 @@ const InventoryCount = require("../models/InventoryCount");
 const FinishedProduct = require("../models/FinishedProduct");
 const Item = require("../models/Item");
 const Usage = require("../models/Usage");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------------
   Helper: Throw formatted errors
@@ -35,7 +36,7 @@ router.use((req, res, next) => {
 });
 
 // AUTO-PAR REPLENISHMENT SUGGESTIONS
-router.get("/:storeId", async (req, res, next) => {
+router.get("/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { storeId } = req.params;
 

@@ -6,6 +6,7 @@ const Usage = require("../models/Usage");
 const Waste = require("../models/Waste");
 const Item = require("../models/Item");
 const FinishedProduct = require("../models/FinishedProduct");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -39,7 +40,7 @@ router.use((req, res, next) => {
 });
 
 // CATEGORY ANALYTICS
-router.get("/:storeId", async (req, res, next) => {
+router.get("/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const { startDate, endDate } = req.query;

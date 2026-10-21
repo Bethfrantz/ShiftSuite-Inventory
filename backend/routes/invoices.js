@@ -4,6 +4,8 @@ const router = express.Router();
 const Invoice = require("../models/Invoice");
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
+const { requireAuth } = require("../middleware/auth");
+
 /* -------------------------------------------------------
    Helper: Throw formatted errors
 ------------------------------------------------------- */
@@ -36,7 +38,7 @@ router.use((req, res, next) => {
 });
 
 // Create invoice
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const invoice = await Invoice.create(req.body);
     res.json({ invoice, requestId: req.requestId });
@@ -46,7 +48,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get all invoices
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const invoices = await Invoice.find().populate("items.itemId");
     res.json({ invoices, requestId: req.requestId });
@@ -56,7 +58,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // Get single invoice
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", requireAuth, async (req, res, next) => {
   try {
     const invoice = await Invoice.findById(req.params.id).populate({
       path: "items.itemId",
@@ -75,7 +77,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Receive invoice → increase inventory counts
-router.post("/:id/receive", async (req, res, next) => {
+router.post("/:id/receive", requireAuth, async (req, res, next) => {
   try {
     const invoice = await Invoice.findById(req.params.id);
 
@@ -109,7 +111,7 @@ router.post("/:id/receive", async (req, res, next) => {
 });
 
 // Update item prices from invoice
-router.post("/:id/update-prices", async (req, res, next) => {
+router.post("/:id/update-prices", requireAuth, async (req, res, next) => {
   try {
     const invoice = await Invoice.findById(req.params.id);
 

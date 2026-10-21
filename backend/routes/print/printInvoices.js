@@ -5,9 +5,10 @@ const PDFDocument = require("pdfkit");
 const Invoice = require("../../models/Invoice");
 const Vendor = require("../../models/Vendor");
 const Store = require("../../models/Store");
+const { requireAuth } = require("../middleware/auth");
 
 // Print invoice
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   try {
     const invoice = await Invoice.findById(req.params.id)
       .populate("vendor")

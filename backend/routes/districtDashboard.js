@@ -4,6 +4,7 @@ const router = express.Router();
 // const axios = require("axios");
 
 const Store = require("../models/Store");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -513,7 +514,7 @@ function slopeStrength(current, future) {
 }
 
 // DISTRICT COMPARISON DASHBOARD
-router.get("/:districtId", async (req, res, next) => {
+router.get("/:districtId", requireAuth, async (req, res, next) => {
   try {
     const { districtId } = req.params;
     if (!districtId) throwError("districtId is required", 400);

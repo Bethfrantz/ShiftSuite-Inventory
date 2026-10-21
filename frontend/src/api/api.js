@@ -17,8 +17,18 @@ const normalize = async (res) => {
     error: null,
   };
 };
-
 const API = {
+  getCurrentUser: async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    const res = await fetch("/api/auth/currentUser", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    return res.json();
+  },
+
   /* ---------------- ITEMS ---------------- */
   getItems: async () => {
     const res = await fetch("/api/items");

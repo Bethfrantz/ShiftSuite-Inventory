@@ -4,8 +4,9 @@ const router = express.Router();
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 const Waste = require("../models/Waste");
+const { requireAuth } = require("../middleware/auth");
 
-router.get("/:storeId/costForecast", async (req, res) => {
+router.get("/:storeId/costForecast", requireAuth, async (req, res) => {
   try {
     const { storeId } = req.params;
 
@@ -15,7 +16,7 @@ router.get("/:storeId/costForecast", async (req, res) => {
 
     const latestCounts = {};
     counts.forEach((c) => {
-      latestCounts[c.itemId] = c.count;
+      latestCounts[c.itemId] = c.quantity;
     });
 
     const forecast = [];
@@ -27,8 +28,8 @@ router.get("/:storeId/costForecast", async (req, res) => {
       const usageRecords = counts.filter(
         (c) => c.itemId.toString() === item._id.toString(),
       );
-      const last30 = usageRecords.slice(-30).map((u) => u.count);
-      const last7 = usageRecords.slice(-7).map((u) => u.count);
+      const last30 = usageRecords.slice(-30).map((u) => u.quantity);
+      const last7 = usageRecords.slice(-7).map((u) => u.quantity);
 
       const avg30 = last30.length
         ? last30.reduce((a, b) => a + b, 0) / last30.length

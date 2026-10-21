@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const InventoryCount = require("../models/InventoryCount");
+const { requireAuth } = require("../middleware/auth");
+
 /* -------------------------------------------------------
    Helper: Throw formatted errors
 ------------------------------------------------------- */
@@ -33,7 +35,7 @@ router.use((req, res, next) => {
 });
 
 // Create inventory count
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const count = await InventoryCount.create(req.body);
     res.json(count);
@@ -43,7 +45,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get all counts
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const counts = await InventoryCount.find()
       .populate("storeId")
@@ -55,7 +57,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // Get counts for a specific store
-router.get("/store/:storeId", async (req, res, next) => {
+router.get("/store/:storeId", requireAuth, async (req, res, next) => {
   try {
     const counts = await InventoryCount.find({
       storeId: req.params.storeId,
@@ -67,7 +69,7 @@ router.get("/store/:storeId", async (req, res, next) => {
 });
 
 // Update a count
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", requireAuth, async (req, res, next) => {
   try {
     const count = await InventoryCount.findByIdAndUpdate(
       req.params.id,
@@ -81,7 +83,7 @@ router.put("/:id", async (req, res, next) => {
 });
 
 // Delete a count
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
     await InventoryCount.findByIdAndDelete(req.params.id);
     res.json({ message: "Inventory count deleted" });
@@ -91,7 +93,7 @@ router.delete("/:id", async (req, res, next) => {
 });
 
 // FIXED — standalone route
-router.get("/history/:storeId/:itemId", async (req, res, next) => {
+router.get("/history/:storeId/:itemId", requireAuth, async (req, res, next) => {
   const { storeId, itemId } = req.params;
   const { start, end } = req.query;
 

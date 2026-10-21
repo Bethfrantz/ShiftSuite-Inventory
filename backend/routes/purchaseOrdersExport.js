@@ -1,33 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const pdf = require("html-pdf");
+const puppeteer = require("puppeteer");
+const { requireAuth } = require("../middleware/auth");
 
 // -----------------------------
-// CSV EXPORT
+// PDF EXPORT (PUPPETEER)
 // -----------------------------
-router.post("/csv", (req, res) => {
-  const { purchaseOrders } = req.body;
-
-  let csv = "Vendor,Item,OrderQty,UnitCost,LineTotal\n";
-
-  Object.keys(purchaseOrders).forEach((vendor) => {
-    purchaseOrders[vendor].lineItems.forEach((li) => {
-      csv += `${vendor},${li.name},${li.recommendedOrder},${li.unitCost},${li.lineTotal}\n`;
-    });
-  });
-
-  res.setHeader("Content-Type", "text/csv");
-  res.setHeader(
-    "Content-Disposition",
-    "attachment; filename=purchase_orders.csv",
-  );
-  res.send(csv);
-});
-
-// -----------------------------
-// PDF EXPORT
-// -----------------------------
-router.post("/pdf", (req, res) => {
+router.post("/pdf", requireAuth, async (req, res) => {
   const { purchaseOrders } = req.body;
 
   let html = "<h1>Vendor Purchase Orders</h1>";
@@ -52,15 +31,41 @@ router.post("/pdf", (req, res) => {
     html += "</table><br/>";
   });
 
-  pdf.create(html).toStream((err, stream) => {
-    if (err) return res.status(500).send("PDF generation failed");
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=purchase_orders.pdf",
-    );
-    stream.pipe(res);
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.setContent(html);
+
+  const pdfBuffer = await page.pdf({ format: "A4" });
+  await browser.close();
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=purchase_orders.pdf",
+  );
+  res.send(pdfBuffer);
+});
+
+// -----------------------------
+// CSV EXPORT
+// -----------------------------
+router.post("/csv", requireAuth, (req, res) => {
+  const { purchaseOrders } = req.body;
+
+  let csv = "Vendor,Item,OrderQty,UnitCost,LineTotal\n";
+
+  Object.keys(purchaseOrders).forEach((vendor) => {
+    purchaseOrders[vendor].lineItems.forEach((li) => {
+      csv += `${vendor},${li.name},${li.recommendedOrder},${li.unitCost},${li.lineTotal}\n`;
+    });
   });
+
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=purchase_orders.csv",
+  );
+  res.send(csv);
 });
 
 module.exports = router;

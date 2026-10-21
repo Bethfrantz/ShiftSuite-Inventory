@@ -5,6 +5,7 @@ const Store = require("../models/Store");
 const Waste = require("../models/Waste");
 const FinishedProduct = require("../models/FinishedProduct");
 const InventoryCount = require("../models/InventoryCount");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -40,7 +41,7 @@ router.use((req, res, next) => {
 /* -------------------------------------------------------
    Create Waste Record (Fixed)
 ------------------------------------------------------- */
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const { storeId, type, rawItemId, finishedProductId, quantity, reason } =
       req.body;
@@ -136,7 +137,7 @@ router.post("/", async (req, res, next) => {
    WASTE REPORT
    GET /waste/report?storeId=xxx&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 ------------------------------------------------------- */
-router.get("/report", async (req, res, next) => {
+router.get("/report", requireAuth, async (req, res, next) => {
   try {
     const { storeId, startDate, endDate } = req.query;
 

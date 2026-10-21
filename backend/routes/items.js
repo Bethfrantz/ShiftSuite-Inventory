@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Item = require("../models/Item");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -34,7 +35,7 @@ router.use((req, res, next) => {
 });
 
 // Create item
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const item = await Item.create(req.body);
     res.json({ item, requestId: req.requestId });
@@ -44,7 +45,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get all items
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const items = await Item.find().populate({
       path: "categoryId",
@@ -58,7 +59,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 // Get item by barcode
-router.get("/barcode/:code", async (req, res, next) => {
+router.get("/barcode/:code", requireAuth, async (req, res, next) => {
   try {
     const item = await Item.findOne({ barcode: req.params.code }).populate({
       path: "categoryId",
@@ -75,7 +76,7 @@ router.get("/barcode/:code", async (req, res, next) => {
 });
 
 // Get single item
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", requireAuth, async (req, res, next) => {
   try {
     const item = await Item.findById(req.params.id).populate({
       path: "categoryId",
@@ -89,7 +90,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Update item
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", requireAuth, async (req, res, next) => {
   try {
     const item = await Item.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -105,7 +106,7 @@ router.put("/:id", async (req, res, next) => {
 });
 
 // Delete item
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
     const item = await Item.findByIdAndDelete(req.params.id).populate({
       path: "categoryId",

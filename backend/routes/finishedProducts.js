@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const FinishedProduct = require("../models/FinishedProduct");
+const { requireAuth } = require("../middleware/auth");
+
 /* -------------------------------------------------------
    Helper: Throw formatted errors
 ------------------------------------------------------- */
@@ -34,7 +36,7 @@ router.use((req, res, next) => {
 });
 
 // CREATE finished product
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const { name, photoUrl, ingredients } = req.body;
 
@@ -51,7 +53,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // GET all finished products
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const products =
       await FinishedProduct.find().populate("ingredients.itemId");
@@ -62,7 +64,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // GET single finished product
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", requireAuth, async (req, res, next) => {
   try {
     const product = await FinishedProduct.findById(req.params.id).populate(
       "ingredients.itemId",
@@ -77,7 +79,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // UPDATE finished product
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", requireAuth, async (req, res, next) => {
   try {
     const { name, photoUrl, ingredients, active } = req.body;
 
@@ -94,7 +96,7 @@ router.put("/:id", async (req, res, next) => {
 });
 
 // DELETE finished product
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
     await FinishedProduct.findByIdAndDelete(req.params.id);
     res.json({ message: "Finished product deleted" });

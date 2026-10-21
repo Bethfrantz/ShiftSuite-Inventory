@@ -3,8 +3,9 @@ const router = express.Router();
 
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount"); // your count history model
+const { requireAuth } = require("../middleware/auth");
 
-router.get("/:storeId/variance", async (req, res) => {
+router.get("/:storeId/variance", requireAuth, async (req, res) => {
   try {
     const { storeId } = req.params;
 

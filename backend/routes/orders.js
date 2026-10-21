@@ -3,6 +3,7 @@ const router = express.Router();
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 const Order = require("../models/Order");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -36,7 +37,7 @@ router.use((req, res, next) => {
 });
 
 // Generate order for a store
-router.post("/:storeId", async (req, res, next) => {
+router.post("/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { storeId } = req.params;
 
@@ -95,7 +96,7 @@ router.post("/:storeId", async (req, res, next) => {
    ORDERS REPORT
    GET /orders/report?storeId=xxx&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 ------------------------------------------------------- */
-router.get("/report", async (req, res, next) => {
+router.get("/report", requireAuth, async (req, res, next) => {
   try {
     const { storeId, startDate, endDate } = req.query;
 

@@ -4,6 +4,7 @@ const router = express.Router();
 const Store = require("../models/Store");
 const Usage = require("../models/Usage");
 const Item = require("../models/Item");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -37,7 +38,7 @@ router.use((req, res, next) => {
 });
 
 // Store usage charts
-router.get("/:storeId", async (req, res, next) => {
+router.get("/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const { startDate, endDate, groupBy } = req.query;

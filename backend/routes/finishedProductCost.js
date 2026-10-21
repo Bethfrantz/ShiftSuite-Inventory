@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const FinishedProduct = require("../models/FinishedProduct");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -35,7 +36,7 @@ router.use((req, res, next) => {
 });
 
 // FINISHED PRODUCT COST CALCULATOR
-router.get("/:finishedProductId", async (req, res, next) => {
+router.get("/:finishedProductId", requireAuth, async (req, res, next) => {
   try {
     const { finishedProductId } = req.params;
     const { quantity } = req.query; // optional: calculate cost for multiple units

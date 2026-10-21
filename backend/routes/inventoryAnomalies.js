@@ -4,8 +4,9 @@ const router = express.Router();
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 const Waste = require("../models/Waste");
+const { requireAuth } = require("../middleware/auth");
 
-router.get("/:storeId/anomalies", async (req, res) => {
+router.get("/:storeId/anomalies", requireAuth, async (req, res) => {
   try {
     const { storeId } = req.params;
 

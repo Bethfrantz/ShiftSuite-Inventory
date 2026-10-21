@@ -4,6 +4,8 @@ const router = express.Router();
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 const InventorySnapshot = require("../models/InventorySnapshot");
+const { requireAuth } = require("../middleware/auth");
+
 /* -------------------------------------------------------
    Helper: Throw formatted errors
 ------------------------------------------------------- */
@@ -36,7 +38,7 @@ router.use((req, res, next) => {
 });
 
 // Get all inventory items for a store (with par levels)
-router.get("/items/:storeId", async (req, res, next) => {
+router.get("/items/:storeId", requireAuth, async (req, res, next) => {
   try {
     const items = await Item.find().populate({
       path: "categoryId",
@@ -69,7 +71,7 @@ router.get("/items/:storeId", async (req, res, next) => {
 });
 
 // Submit inventory counts
-router.post("/counts/:storeId", async (req, res, next) => {
+router.post("/counts/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { counts } = req.body;
 
@@ -91,7 +93,7 @@ router.post("/counts/:storeId", async (req, res, next) => {
 });
 
 // Get latest counts for a store
-router.get("/counts/:storeId", async (req, res, next) => {
+router.get("/counts/:storeId", requireAuth, async (req, res, next) => {
   try {
     const counts = await InventoryCount.find({
       storeId: req.params.storeId,
@@ -104,7 +106,7 @@ router.get("/counts/:storeId", async (req, res, next) => {
 });
 
 // Create snapshot
-router.post("/snapshot/:storeId", async (req, res, next) => {
+router.post("/snapshot/:storeId", requireAuth, async (req, res, next) => {
   try {
     const counts = await InventoryCount.find({
       storeId: req.params.storeId,
@@ -126,7 +128,7 @@ router.post("/snapshot/:storeId", async (req, res, next) => {
 });
 
 // Get all snapshots for a store
-router.get("/snapshot/:storeId", async (req, res, next) => {
+router.get("/snapshot/:storeId", requireAuth, async (req, res, next) => {
   try {
     const snapshots = await InventorySnapshot.find({
       storeId: req.params.storeId,
@@ -139,18 +141,22 @@ router.get("/snapshot/:storeId", async (req, res, next) => {
 });
 
 // Get single snapshot
-router.get("/snapshot/:storeId/:snapshotId", async (req, res, next) => {
-  try {
-    const snapshot = await InventorySnapshot.findById(
-      req.params.snapshotId,
-    ).populate("items.itemId");
+router.get(
+  "/snapshot/:storeId/:snapshotId",
+  requireAuth,
+  async (req, res, next) => {
+    try {
+      const snapshot = await InventorySnapshot.findById(
+        req.params.snapshotId,
+      ).populate("items.itemId");
 
-    if (!snapshot) throwError("Snapshot not found", 404);
+      if (!snapshot) throwError("Snapshot not found", 404);
 
-    res.json({ snapshot, requestId: req.requestId });
-  } catch (err) {
-    next(err); // Step 3: Send errors to global handler
-  }
-});
+      res.json({ snapshot, requestId: req.requestId });
+    } catch (err) {
+      next(err); // Step 3: Send errors to global handler
+    }
+  },
+);
 
 module.exports = router;

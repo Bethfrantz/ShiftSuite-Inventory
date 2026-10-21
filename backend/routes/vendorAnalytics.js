@@ -7,6 +7,7 @@ const Waste = require("../models/Waste");
 const Item = require("../models/Item");
 const FinishedProduct = require("../models/FinishedProduct");
 const Invoice = require("../models/Invoice");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    VENDOR contract optimization
@@ -105,13 +106,6 @@ function forecastVendorCosts(costTrend) {
     "30d": exponentialSmooth(totals, 0.4),
   };
 }
-const vendorContractOptimization = buildVendorContractOptimization(
-  vendorData,
-  vendorCostTrend,
-  vendorForecast,
-  vendorRiskScore,
-  vendorContractOptimization,
-);
 
 // -------------------------------------------------------------
 // PRICE VOLATILITY (0–40 points)
@@ -227,7 +221,7 @@ router.use((req, res, next) => {
 });
 
 // VENDOR ANALYTICS
-router.get("/:storeId", async (req, res, next) => {
+router.get("/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { storeId } = req.params;
     const { startDate, endDate } = req.query;
@@ -398,6 +392,13 @@ router.get("/:storeId", async (req, res, next) => {
         usageCost,
         forecast,
       );
+      const vendorContractOptimization = buildVendorContractOptimization(
+        vendorData,
+        vendorCostTrend,
+        vendorForecast,
+        vendorRiskScore,
+        vendorContractOptimization,
+      );
     }
 
     res.json({
@@ -410,6 +411,7 @@ router.get("/:storeId", async (req, res, next) => {
       vendorCostTrend,
       vendorForecast,
       vendorRiskScore,
+      vendorContractOptimization,
       requestId: req.requestId,
     });
   } catch (err) {

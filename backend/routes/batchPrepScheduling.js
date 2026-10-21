@@ -3,6 +3,7 @@ const router = express.Router();
 
 const FinishedProduct = require("../models/FinishedProduct");
 const InventoryCount = require("../models/InventoryCount");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -36,82 +37,86 @@ router.use((req, res, next) => {
 });
 
 // BATCH PREP INVENTORY DEDUCTION
-router.post("/:storeId/:finishedProductId", async (req, res, next) => {
-  try {
-    const { storeId, finishedProductId } = req.params;
-    const { quantity } = req.body;
+router.post(
+  "/:storeId/:finishedProductId",
+  requireAuth,
+  async (req, res, next) => {
+    try {
+      const { storeId, finishedProductId } = req.params;
+      const { quantity } = req.body;
 
-    const batchQty = Number(quantity || 1);
+      const batchQty = Number(quantity || 1);
 
-    const fp =
-      await FinishedProduct.findById(finishedProductId).populate(
-        "ingredients.itemId",
-      );
+      const fp =
+        await FinishedProduct.findById(finishedProductId).populate(
+          "ingredients.itemId",
+        );
 
-    if (!fp) throwError("Finished product not found", 404);
+      if (!fp) throwError("Finished product not found", 404);
 
-    const deductionResults = [];
-    const warnings = [];
+      const deductionResults = [];
+      const warnings = [];
 
-    for (const ing of fp.ingredients) {
-      const item = ing.itemId;
+      for (const ing of fp.ingredients) {
+        const item = ing.itemId;
 
-      const requiredQty = ing.quantityUsed * batchQty;
+        const requiredQty = ing.quantityUsed * batchQty;
 
-      // FIXED: correct inventory lookup
-      let inventory = await InventoryCount.findOne({
-        storeId: storeId,
-        itemId: item._id,
-      });
-
-      if (!inventory) {
-        inventory = await InventoryCount.create({
+        // FIXED: correct inventory lookup
+        let inventory = await InventoryCount.findOne({
           storeId: storeId,
           itemId: item._id,
-          quantity: 0,
         });
-      }
 
-      const beforeQty = inventory.quantity;
-      const afterQty = Math.max(0, beforeQty - requiredQty);
+        if (!inventory) {
+          inventory = await InventoryCount.create({
+            storeId: storeId,
+            itemId: item._id,
+            quantity: 0,
+          });
+        }
 
-      inventory.quantity = afterQty;
-      await inventory.save();
+        const beforeQty = inventory.quantity;
+        const afterQty = Math.max(0, beforeQty - requiredQty);
 
-      deductionResults.push({
-        itemId: item._id,
-        name: item.name,
-        requiredQty,
-        beforeQty,
-        afterQty,
-        photoUrl: item.photoUrl,
-      });
+        inventory.quantity = afterQty;
+        await inventory.save();
 
-      // Par-level warning
-      const parLevel = item.parLevels?.find(
-        (p) => p.storeId.toString() === storeId,
-      );
-
-      if (parLevel && afterQty < parLevel.par) {
-        warnings.push({
+        deductionResults.push({
           itemId: item._id,
           name: item.name,
-          message: `Stock below par level (${afterQty} < ${parLevel.par})`,
+          requiredQty,
+          beforeQty,
+          afterQty,
+          photoUrl: item.photoUrl,
         });
-      }
-    }
 
-    res.json({
-      finishedProductId: fp._id,
-      name: fp.name,
-      batchQuantity: batchQty,
-      deductions: deductionResults,
-      warnings,
-      requestId: req.requestId,
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+        // Par-level warning
+        const parLevel = item.parLevels?.find(
+          (p) => p.storeId.toString() === storeId,
+        );
+
+        if (parLevel && afterQty < parLevel.par) {
+          warnings.push({
+            itemId: item._id,
+            name: item.name,
+            message: `Stock below par level (${afterQty} < ${parLevel.par})`,
+          });
+        }
+      }
+
+      res.json({
+        finishedProductId: fp._id,
+        name: fp.name,
+        batchQuantity: batchQty,
+        deductions: deductionResults,
+        warnings,
+        requestId: req.requestId,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 module.exports = router;

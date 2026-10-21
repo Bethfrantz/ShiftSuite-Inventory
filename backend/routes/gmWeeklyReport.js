@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 
 const Store = require("../models/Store");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -36,7 +37,7 @@ router.use((req, res, next) => {
 });
 
 // GM WEEKLY REPORT
-router.get("/:storeId", async (req, res, next) => {
+router.get("/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { storeId } = req.params;
 

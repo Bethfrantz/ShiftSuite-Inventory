@@ -6,6 +6,7 @@ const InventoryCount = require("../models/InventoryCount");
 const Usage = require("../models/Usage");
 const Waste = require("../models/Waste");
 const Item = require("../models/Item");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -42,7 +43,7 @@ router.use((req, res, next) => {
    DAILY SNAPSHOT GENERATION
    GET /inventorySnapshots/daily?storeId=xxx&date=YYYY-MM-DD
 ------------------------------------------------------- */
-router.get("/daily", async (req, res, next) => {
+router.get("/daily", requireAuth, async (req, res, next) => {
   try {
     const { storeId, date } = req.query;
 
@@ -170,7 +171,7 @@ router.get("/daily", async (req, res, next) => {
 ------------------------------------------------------- */
 
 // Create snapshot manually
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const snapshot = await InventorySnapshot.create(req.body);
     res.json(snapshot);
@@ -180,7 +181,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get all snapshots
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const snapshots = await InventorySnapshot.find()
       .populate("storeId")
@@ -192,7 +193,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // Get snapshots for a store
-router.get("/store/:storeId", async (req, res, next) => {
+router.get("/store/:storeId", requireAuth, async (req, res, next) => {
   try {
     const snapshots = await InventorySnapshot.find({
       storeId: req.params.storeId,
@@ -204,7 +205,7 @@ router.get("/store/:storeId", async (req, res, next) => {
 });
 
 // Get single snapshot
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", requireAuth, async (req, res, next) => {
   try {
     const snapshot = await InventorySnapshot.findById(req.params.id)
       .populate("storeId")
@@ -216,7 +217,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Delete snapshot
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
     await InventorySnapshot.findByIdAndDelete(req.params.id);
     res.json({ message: "Snapshot deleted", requestId: req.requestId });

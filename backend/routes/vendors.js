@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Vendor = require("../models/Vendor");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -34,7 +35,7 @@ router.use((req, res, next) => {
 });
 
 // Create vendor
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     if (!req.body.name) throwError("Vendor name is required", 400);
     const vendor = await Vendor.create(req.body);
@@ -45,7 +46,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get all vendors
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const vendors = await Vendor.find();
     res.json({ vendors, requestId: req.requestId });
@@ -55,7 +56,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // Get single vendor
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", requireAuth, async (req, res, next) => {
   try {
     const vendor = await Vendor.findById(req.params.id);
     if (!vendor) throwError("Vendor not found", 404);
@@ -66,7 +67,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Update vendor
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", requireAuth, async (req, res, next) => {
   try {
     const vendor = await Vendor.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -79,7 +80,7 @@ router.put("/:id", async (req, res, next) => {
 });
 
 // Delete vendor
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
     const vendor = await Vendor.findByIdAndDelete(req.params.id);
     if (!vendor) throwError("Vendor not found", 404);

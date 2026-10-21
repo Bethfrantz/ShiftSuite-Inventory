@@ -3,6 +3,7 @@ const router = express.Router();
 const Usage = require("../models/Usage");
 const FinishedProduct = require("../models/FinishedProduct");
 const Item = require("../models/Item");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -39,7 +40,7 @@ router.use((req, res, next) => {
    USAGE CALCULATION ROUTE
    POST /usage/calculate
 ------------------------------------------------------- */
-router.post("/calculate", async (req, res, next) => {
+router.post("/calculate", requireAuth, async (req, res, next) => {
   try {
     const { storeId, finishedProductId, quantityProduced, timestamp } =
       req.body;
@@ -109,7 +110,7 @@ router.post("/calculate", async (req, res, next) => {
 ------------------------------------------------------- */
 
 // Get all usage
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const usage = await Usage.find()
       .populate("itemId")
@@ -122,7 +123,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // Get usage for a store
-router.get("/store/:storeId", async (req, res, next) => {
+router.get("/store/:storeId", requireAuth, async (req, res, next) => {
   try {
     const usage = await Usage.find({ storeId: req.params.storeId })
       .populate("itemId")

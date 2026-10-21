@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Store = require("../models/Store");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -34,7 +35,7 @@ router.use((req, res, next) => {
 });
 
 // Create store
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     if (!req.body.name || !req.body.storeNumber)
       throwError("Store name and storeNumber are required", 400);
@@ -47,7 +48,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get all stores
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const stores = await Store.find();
 

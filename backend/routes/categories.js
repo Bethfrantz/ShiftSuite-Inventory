@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Category = require("../models/Category");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -34,7 +35,7 @@ router.use((req, res, next) => {
 });
 
 // Create category
-router.post("/", async (req, res, next) => {
+router.post("/", requireAuth, async (req, res, next) => {
   try {
     const category = await Category.create(req.body);
     res.json(category);
@@ -44,7 +45,7 @@ router.post("/", async (req, res, next) => {
 });
 
 // Get all categories
-router.get("/", async (req, res, next) => {
+router.get("/", requireAuth, async (req, res, next) => {
   try {
     const categories = await Category.find();
     res.json({ categories });
@@ -54,7 +55,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // Get single category
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", requireAuth, async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
     res.json({ category });
@@ -64,7 +65,7 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Update category
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", requireAuth, async (req, res, next) => {
   try {
     const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -76,7 +77,7 @@ router.put("/:id", async (req, res, next) => {
 });
 
 // Delete category
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
     await Category.findByIdAndDelete(req.params.id);
     res.json({ message: "Category deleted" });

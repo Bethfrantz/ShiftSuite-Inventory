@@ -3,7 +3,7 @@ import ShiftSuiteNav from "./components/ShiftSuiteNav";
 
 // Existing pages
 import Dashboard from "./pages/Dashboard";
-import Inventory from "./pages/Inventory";
+import Inventory from "./pages/Inventory/Inventory";
 
 import ManagerDashboard from "./pages/ManagerDashboard";
 
@@ -30,6 +30,7 @@ function App() {
           <Route path="/manager" element={<ManagerDashboard />} />
 
           <Route path="/items/edit/:itemId" element={<ItemEditModal />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </div>
     </div>

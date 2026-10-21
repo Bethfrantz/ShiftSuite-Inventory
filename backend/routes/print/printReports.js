@@ -4,9 +4,10 @@ const PDFDocument = require("pdfkit");
 
 const StoreReport = require("../../models/StoreReport");
 const DistrictReport = require("../../models/DistrictReport");
+const { requireAuth } = require("../middleware/auth");
 
 // Print store report
-router.get("/store/:storeId", async (req, res) => {
+router.get("/store/:storeId", requireAuth, async (req, res) => {
   try {
     const report = await StoreReport.findOne({
       store: req.params.storeId,
@@ -45,7 +46,7 @@ router.get("/store/:storeId", async (req, res) => {
 });
 
 // Print district report
-router.get("/district/:districtId", async (req, res) => {
+router.get("/district/:districtId", requireAuth, async (req, res) => {
   try {
     const report = await DistrictReport.findOne({
       districtId: req.params.districtId,

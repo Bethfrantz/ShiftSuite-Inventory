@@ -5,6 +5,7 @@ const Store = require("../models/Store");
 const Item = require("../models/Item");
 const InventoryCount = require("../models/InventoryCount");
 const Usage = require("../models/Usage");
+const { requireAuth } = require("../middleware/auth");
 
 /* -------------------------------------------------------
    Helper: Throw formatted errors
@@ -38,7 +39,7 @@ router.use((req, res, next) => {
 });
 
 // VENDOR ORDER AUTOMATION (UPGRADED)
-router.get("/:storeId", async (req, res, next) => {
+router.get("/:storeId", requireAuth, async (req, res, next) => {
   try {
     const { storeId } = req.params;
 
