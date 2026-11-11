@@ -64,6 +64,12 @@ const InvoiceSchema = new mongoose.Schema(
     receivedAt: {
       type: Date,
     },
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: true,
+      index: true, // Add index for tenantId
+    },
   },
   { timestamps: true },
 );

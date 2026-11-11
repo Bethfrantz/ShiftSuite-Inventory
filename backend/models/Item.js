@@ -54,6 +54,12 @@ const ItemSchema = new mongoose.Schema({
   safetyStockDays: { type: Number, default: 0 },
   barcodeImageUrl: { type: String, default: "" },
   preferredVendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor" },
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tenant",
+    required: true,
+    index: true, // Add index for tenantId
+  },
 });
 
 module.exports = mongoose.model("Item", ItemSchema);

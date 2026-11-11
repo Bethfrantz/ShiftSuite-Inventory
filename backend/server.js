@@ -1,11 +1,31 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const { tenantStorage } = require("./middleware/tenantContext");
+const multiTenantPlugin = require("./middleware/multiTenantPlugin");
 require("dotenv").config();
 
 const app = express(); // <-- MUST come before any app.use()
 app.use(cors());
 app.use(express.json());
+
+// 1. Register the plugin globally to ALL schemas
+mongoose.plugin(multiTenantPlugin);
+const { requireAuth } = require("./middleware/auth");
+const tenantMiddleware = require("./middleware/tenantMiddleware");
+const errorHandler = require("./middleware/errorHandler");
+
+// 2. Express Middleware to isolate request context
+app.use((req, res, next) => {
+  // Extract tenantId (usually from req.user after your requireAuth runs)
+  // For demonstration, let's assume it's attached via auth middleware previously
+  const tenantId = req.user?.tenantId || req.headers["x-tenant-id"];
+
+  // Run the rest of the request chain inside this isolated tenant context
+  tenantStorage.run({ tenantId }, () => {
+    next();
+  });
+});
 
 /* -------------------------------------------------------
    EXPORT ROUTES (place here)

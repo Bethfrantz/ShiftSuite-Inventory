@@ -6,6 +6,12 @@ const CategorySchema = new mongoose.Schema(
     description: { type: String, default: "" },
     photoUrl: { type: String, default: "" },
     active: { type: Boolean, default: true },
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: true,
+      index: true, // Add index for tenantId
+    },
   },
   { timestamps: true },
 );

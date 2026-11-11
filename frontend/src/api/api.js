@@ -28,6 +28,21 @@ const API = {
 
     return res.json();
   },
+  /* ---------------- Select Store ---------------- */
+  selectStore: async (storeId) => {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("/api/auth/selectStore", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ storeId }),
+    });
+
+    return res.json();
+  },
 
   /* ---------------- ITEMS ---------------- */
   getItems: async () => {

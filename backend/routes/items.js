@@ -37,7 +37,10 @@ router.use((req, res, next) => {
 // Create item
 router.post("/", requireAuth, async (req, res, next) => {
   try {
-    const item = await Item.create(req.body);
+    const item = await Item.create({
+      ...req.body,
+      tenantId: req.user.tenantId,
+    });
     res.json({ item, requestId: req.requestId });
   } catch (err) {
     next(err); // Step 3: Send errors to global handler
@@ -47,7 +50,7 @@ router.post("/", requireAuth, async (req, res, next) => {
 // Get all items
 router.get("/", requireAuth, async (req, res, next) => {
   try {
-    const items = await Item.find().populate({
+    const items = await Item.find({ tenantId: req.user.tenantId }).populate({
       path: "categoryId",
       select: "name photoUrl color",
     });
@@ -61,7 +64,10 @@ router.get("/", requireAuth, async (req, res, next) => {
 // Get item by barcode
 router.get("/barcode/:code", requireAuth, async (req, res, next) => {
   try {
-    const item = await Item.findOne({ barcode: req.params.code }).populate({
+    const item = await Item.findOne({
+      barcode: req.params.code,
+      tenantId: req.user.tenantId,
+    }).populate({
       path: "categoryId",
       select: "name photoUrl color",
     });
@@ -78,7 +84,10 @@ router.get("/barcode/:code", requireAuth, async (req, res, next) => {
 // Get single item
 router.get("/:id", requireAuth, async (req, res, next) => {
   try {
-    const item = await Item.findById(req.params.id).populate({
+    const item = await Item.findByOne({
+      _id: req.params.id,
+      tenantId: req.user.tenantId,
+    }).populate({
       path: "categoryId",
       select: "name photoUrl color",
     });
@@ -92,9 +101,14 @@ router.get("/:id", requireAuth, async (req, res, next) => {
 // Update item
 router.put("/:id", requireAuth, async (req, res, next) => {
   try {
-    const item = await Item.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    }).populate({
+    const updateData = { ...req.body };
+    delete updateData.tenantId;
+
+    const item = await Item.findOneAndUpdate(
+      { _id: req.params.id, tenantId: req.user.tenantId },
+      updateData,
+      { new: true },
+    ).populate({
       path: "categoryId",
       select: "name photoUrl color",
     });
@@ -108,9 +122,9 @@ router.put("/:id", requireAuth, async (req, res, next) => {
 // Delete item
 router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
-    const item = await Item.findByIdAndDelete(req.params.id).populate({
-      path: "categoryId",
-      select: "name photoUrl color",
+    const item = await Item.findByOneAndDelete({
+      _id: req.params.id,
+      tenantId: req.user.tenantId,
     });
     if (!item) throwError(`Item with ID ${req.params.id} not found`, 404);
     res.json({ message: "Item deleted", requestId: req.requestId });

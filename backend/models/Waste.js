@@ -38,6 +38,12 @@ const WasteSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: true,
+      index: true, // Add index for tenantId
+    },
   },
   { timestamps: true },
 );

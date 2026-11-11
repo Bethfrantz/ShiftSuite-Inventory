@@ -11,7 +11,13 @@ function requireAuth(req, res, next) {
     const token = auth.slice(7);
     const payload = jwt.verify(token, JWT_SECRET);
 
-    req.user = payload;
+    req.user = {
+      userId: payload.userId,
+      tenantId: payload.tenantId,
+      tenantCode: payload.tenantCode,
+      role: payload.role,
+      activeStoreId: payload.activeStoreId,
+    };
     next();
   } catch (err) {
     return res.status(401).json({ error: "Invalid token" });

@@ -40,7 +40,13 @@ router.use((req, res, next) => {
 // Get all inventory items for a store (with par levels)
 router.get("/items/:storeId", requireAuth, async (req, res, next) => {
   try {
-    const items = await Item.find().populate({
+    const storeId = req.params.storeId;
+
+    if (storeId !== req.user.activeStoreId.toString()) {
+      throwError("Store not assigned to user", 403);
+    }
+
+    const items = await Item.find({ tenantId: req.user.tenantId }).populate({
       path: "categoryId",
       select: "name photoUrl color",
     });

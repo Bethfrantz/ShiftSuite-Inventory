@@ -25,6 +25,12 @@ const InventoryCountSchema = new mongoose.Schema(
       enum: ["manual", "scan", "invoice", "adjustment"],
       default: "manual",
     },
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: true,
+      index: true, // Add index for tenantId
+    },
   },
   { timestamps: true },
 );

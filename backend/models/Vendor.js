@@ -11,6 +11,12 @@ const VendorSchema = new mongoose.Schema(
     leadTimeDays: { type: Number, default: 0 },
     contactEmail: { type: String, default: "" },
     contractNotes: { type: String, default: "" },
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: true,
+      index: true, // Add index for tenantId
+    },
   },
   { timestamps: true },
 );

@@ -12,6 +12,12 @@ const AdjustmentSchema = new mongoose.Schema({
     ref: "Store",
     required: true,
   },
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tenant",
+    required: true,
+    index: true, // Add index for tenantId
+  },
 
   quantityChange: {
     type: Number,

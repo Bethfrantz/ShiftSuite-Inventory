@@ -1,20 +1,30 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema(
+const TenantSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
 
-    role: {
-      type: String,
-      enum: ["manager", "district", "corporate"],
-      required: true,
-    },
-
     tenantCode: {
       type: String,
       required: true, // "ELMOS"
+    },
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: true,
+    },
+    role: {
+      type: String,
+      enum: [
+        "PlatformAdmin",
+        "CompanyAdmin",
+        "DistrictManager",
+        "StoreManager",
+        "Employee",
+      ],
+      required: true,
     },
 
     storeIds: [
@@ -32,4 +42,4 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("Tenant", TenantSchema);

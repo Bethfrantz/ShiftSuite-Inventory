@@ -10,7 +10,7 @@ router.get("/:storeId/forecast", requireAuth, async (req, res) => {
   try {
     const { storeId } = req.params;
 
-    const items = await Item.find({ storeId });
+    const items = await Item.find({ tenantId: req.user.tenantId });
     const counts = await InventoryCount.find({ storeId });
     const waste = await Waste.find({ storeId });
 

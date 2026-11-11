@@ -15,13 +15,19 @@ export default function Login() {
 
     try {
       const data = await API.login(email, password, tenantCode);
+
       if (!data.token) {
         setError("Invalid credentials");
         return;
       }
-      navigate("/inventory");
-    } catch (err) {
-      setError("Login error");
+
+      if (data.user.storeIds.length > 1) {
+        navigate("/select-store");
+      } else {
+        navigate("/inventory");
+      }
+    } catch {
+      setError("Login failed");
     }
   }
 
@@ -29,26 +35,24 @@ export default function Login() {
     <div style={{ padding: "2rem" }}>
       <h1>Login</h1>
       {error && <p style={{ color: "red" }}>{error}</p>}
+
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Tenant Code</label>
-          <input
-            value={tenantCode}
-            onChange={(e) => setTenantCode(e.target.value)}
-          />
-        </div>
+        <label>Email</label>
+        <input value={email} onChange={(e) => setEmail(e.target.value)} />
+
+        <label>Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <label>Tenant Code</label>
+        <input
+          value={tenantCode}
+          onChange={(e) => setTenantCode(e.target.value)}
+        />
+
         <button type="submit">Login</button>
       </form>
     </div>

@@ -37,7 +37,10 @@ router.use((req, res, next) => {
 // Create category
 router.post("/", requireAuth, async (req, res, next) => {
   try {
-    const category = await Category.create(req.body);
+    const category = await Category.create({
+      ...req.body,
+      tenantId: req.user.tenantId,
+    });
     res.json(category);
   } catch (err) {
     next(err);
@@ -47,7 +50,7 @@ router.post("/", requireAuth, async (req, res, next) => {
 // Get all categories
 router.get("/", requireAuth, async (req, res, next) => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.find({ tenantId: req.user.tenantId });
     res.json({ categories });
   } catch (err) {
     next(err);
@@ -57,7 +60,10 @@ router.get("/", requireAuth, async (req, res, next) => {
 // Get single category
 router.get("/:id", requireAuth, async (req, res, next) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findOne({
+      _id: req.params.id,
+      tenantId: req.user.tenantId,
+    });
     res.json({ category });
   } catch (err) {
     next(err);
@@ -67,9 +73,11 @@ router.get("/:id", requireAuth, async (req, res, next) => {
 // Update category
 router.put("/:id", requireAuth, async (req, res, next) => {
   try {
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const category = await Category.findOneAndUpdate(
+      { _id: req.params.id, tenantId: req.user.tenantId },
+      req.body,
+      { new: true },
+    );
     res.json(category);
   } catch (err) {
     next(err);
@@ -79,7 +87,10 @@ router.put("/:id", requireAuth, async (req, res, next) => {
 // Delete category
 router.delete("/:id", requireAuth, async (req, res, next) => {
   try {
-    await Category.findByIdAndDelete(req.params.id);
+    await Category.findOneAndDelete({
+      _id: req.params.id,
+      tenantId: req.user.tenantId,
+    });
     res.json({ message: "Category deleted" });
   } catch (err) {
     next(err);
